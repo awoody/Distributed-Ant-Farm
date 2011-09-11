@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.*;
 
-
+//master server
 public class Master {
 	
 	private static ServerSocket serverSocket;
