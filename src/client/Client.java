@@ -1,3 +1,4 @@
+package client;
 import java.net.Socket;
 import java.io.*;
 
@@ -11,9 +12,7 @@ public class Client
 	{		
 		String msg = "a";		
 		BufferedReader reader;
-		
-		
-		
+
 		try 
 		{
 			socket = new Socket("localhost",9999);
@@ -21,7 +20,7 @@ public class Client
 			int connectPort = Integer.parseInt(portReader.readLine());
 			
 			System.out.println("connecting to port: " + connectPort);
-			socket = new Socket("localhost",connectPort);
+			socket = new Socket("localhost", connectPort);
 			
 			printWriter = new PrintWriter(socket.getOutputStream(), true);
 		} 
