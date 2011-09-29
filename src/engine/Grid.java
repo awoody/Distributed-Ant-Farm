@@ -2,6 +2,7 @@ package engine;
 
 import java.awt.Point;
 
+import communication.AbstractPackage;
 import communication.Portal;
 
 import utilities.Constants;
@@ -10,6 +11,12 @@ public class Grid
 {
 	private final Block[][] allBlocks;
 	private static Portal portal;
+	private Point antHole;
+	
+	public Point getAntHoleLocation()
+	{
+		return antHole;
+	}
 	
 	public Grid()
 	{
@@ -22,6 +29,9 @@ public class Grid
 		for(int i = 0; i < gridSize; i++)
 			for(int j=0; j < gridSize; j++)
 				allBlocks[i][j] = new Block();
+		
+		int holeLocation = gridSize/2;
+		antHole = new Point(holeLocation, holeLocation);
 	}
 	
 	public GridSnapshot getDeepCopy()

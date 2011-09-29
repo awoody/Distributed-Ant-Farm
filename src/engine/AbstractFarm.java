@@ -1,11 +1,13 @@
 package engine;
 
+import java.awt.Point;
+
 import communication.AbstractPackage;
 import communication.Portal;
 
 public abstract class AbstractFarm implements Portal
 {
-	private static Grid mainGrid;
+	protected static Grid mainGrid;
 	
 	public AbstractFarm()
 	{
@@ -20,6 +22,12 @@ public abstract class AbstractFarm implements Portal
 	private Grid copyGrid()
 	{
 		return null;
+	}
+	
+	@Override
+	public void addBlockSnapshot(Point blockLocation, BlockSnapshot snapshot)
+	{
+		
 	}
 	
 	@Override
