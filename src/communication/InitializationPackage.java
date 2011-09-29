@@ -6,8 +6,8 @@ import engine.Grid;
 
 public class InitializationPackage extends AbstractPackage
 {
-	private static final long serialVersionUID = -3091198855152175406L;
-	
+	private static final long serialVersionUID = -6131017115752905201L;
+
 	public BlockSnapshot[][]startingSnapshot;
 
 	@Override
