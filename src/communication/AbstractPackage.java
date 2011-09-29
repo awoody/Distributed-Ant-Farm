@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import satellite.SatelliteFarm;
 import client.Ant;
+import engine.Block;
+import engine.Grid;
 
 /**
  * Baseline class for all packages; meant to be overridden
@@ -19,8 +21,20 @@ public abstract class AbstractPackage implements Serializable
 	
 	public abstract void initialize(Ant ant);
 	
-	public abstract void updateServer(SatelliteFarm satellite);
+	public abstract void updateGrid(Grid mainGrid);
 	
 	public abstract void processReturn(Ant a);
+
+	public int getUniqueId() 
+	{
+		return uniqueId;
+	}
+
+	public void setUniqueId(int uniqueId) 
+	{
+		this.uniqueId = uniqueId;
+	}
+	
+	
 	
 }

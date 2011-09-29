@@ -15,7 +15,7 @@ public class Client
 
 		try 
 		{
-			socket = new Socket("localhost",9999);
+			socket = new Socket("localhost",11000);
 			BufferedReader portReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			int connectPort = Integer.parseInt(portReader.readLine());
 			

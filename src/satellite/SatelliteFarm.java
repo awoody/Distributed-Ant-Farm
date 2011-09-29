@@ -1,5 +1,8 @@
 package satellite;
 
-public class SatelliteFarm {
+import engine.AbstractFarm;
+
+public class SatelliteFarm extends AbstractFarm
+{
 
 }
