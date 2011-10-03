@@ -3,9 +3,9 @@ package satellite;
 import communication.AbstractPackage;
 import communication.InitializationPackage;
 
-import engine.AbstractFarm;
+import engine.AbstractEngine;
 
-public class SatelliteFarm extends AbstractFarm
+public class SatelliteEngine extends AbstractEngine
 {
 	public AbstractPackage getPackageForNewAnt()
 	{

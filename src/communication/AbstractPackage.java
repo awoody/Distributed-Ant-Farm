@@ -2,7 +2,7 @@ package communication;
 
 import java.io.Serializable;
 
-import satellite.SatelliteFarm;
+import satellite.SatelliteEngine;
 import client.Ant;
 import engine.Block;
 import engine.Grid;

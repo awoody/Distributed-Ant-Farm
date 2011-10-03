@@ -5,16 +5,16 @@ import java.awt.Point;
 import communication.AbstractPackage;
 import communication.Portal;
 
-public abstract class AbstractFarm implements Portal
+public abstract class AbstractEngine implements Portal
 {
 	protected static Grid mainGrid;
 	
-	public AbstractFarm()
+	public AbstractEngine()
 	{
 		mainGrid = new Grid();
 	}
 	
-	public AbstractFarm(Grid aGrid)
+	public AbstractEngine(Grid aGrid)
 	{
 		mainGrid = aGrid;
 	}
