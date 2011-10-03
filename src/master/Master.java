@@ -6,10 +6,14 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.*;
 
+import antImplementation.MasterAntFarm;
+
+import communication.AbstractPackage;
+import communication.AbstractPortal;
 import utilities.A;
 
 //master server
-public class Master
+public class Master extends AbstractPortal
 {
 	
 	private ServerSocket serverSocket;
@@ -19,7 +23,7 @@ public class Master
 	private final LinkedList <Socket>clients;
 		
 	public Master()
-	{
+	{	
 		clients = new LinkedList<Socket>();
 		run = true;
 		try 
@@ -36,7 +40,7 @@ public class Master
 		connectionThread.run(); //Have a nice day!
 	}
 	
-	public static void main(String[] args)
+	public void run() 
 	{
 		int timeAlive = 0;
 		Socket clientSocket;
@@ -103,5 +107,4 @@ public class Master
 		}
 		
 	}
-
 }

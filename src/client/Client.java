@@ -2,14 +2,18 @@ package client;
 import java.net.Socket;
 import java.io.*;
 
+import antImplementation.Ant;
 
-public class Client 
+import communication.AbstractPortal;
+
+public class Client extends AbstractPortal
 {
-	private static Socket socket;
-	private static PrintWriter printWriter;
+	private Socket socket;
+	private PrintWriter printWriter;
 	
-	public static void main(String[] args)
+	public void run()
 	{		
+		
 		String msg = "a";		
 		BufferedReader reader;
 
@@ -47,7 +51,5 @@ public class Client
 			e.printStackTrace();
 		}
 		
-	}
-	
-	
+	}	
 }

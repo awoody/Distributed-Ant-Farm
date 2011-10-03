@@ -1,54 +1,64 @@
 package engine;
 
-import java.awt.Point;
-
 import communication.AbstractPackage;
+import communication.NodeId;
 import communication.Portal;
+import communication.Recipient;
 
-public abstract class AbstractEngine implements Portal
+/**
+ * This is the superclass for all three of the engine objects.  This
+ * should contain any details, such as implementation of the recipient
+ * protocol, that pertain to any element of the engine.  
+ * 
+ * @author Alex Woody
+ *         CS 587 Fall 2011 - DAF Project Group
+ *
+ */
+public abstract class AbstractEngine implements Recipient
 {
-	protected static Grid mainGrid;
+	private final Portal portal;
 	
-	public AbstractEngine()
+	/**
+	 * All abstract engine constructors must at least
+	 * take a portal as a parameter, since each recipient
+	 * is bound to a portal and vice-versa.
+	 * @param aPortal
+	 */
+	public AbstractEngine(Portal aPortal)
 	{
-		mainGrid = new Grid();
+		portal = aPortal;
+		portal.setRecipient(this);
 	}
 	
-	public AbstractEngine(Grid aGrid)
+	/* (non-Javadoc)
+	 * @see communication.Recipient#receivePackage(communication.AbstractPackage)
+	 */
+	@Override
+	public void receivePackage(AbstractPackage aPackage)
 	{
-		mainGrid = aGrid;
+		return;
+	}
+
+	/**
+	 * Returns the portal set for this recipient, so that it's
+	 * methods might be accessed.
+	 * 
+	 * @return
+	 * 		- This recipient's portal.
+	 */
+	public Portal getPortal() 
+	{
+		return portal;
 	}
 	
-	private Grid copyGrid()
+	/**
+	 * Returns a specialized package for a new connection.  This should
+	 * be overridden in a subclass, since this would be drastically different
+	 * for a master engine, a satellite engine and a client engine.
+	 */
+	public AbstractPackage packageForNewConnection(NodeId id)
 	{
 		return null;
 	}
-	
-	@Override
-	public void addBlockSnapshot(Point blockLocation, BlockSnapshot snapshot)
-	{
-		
-	}
-	
-	@Override
-	public void dispatchPackage(AbstractPackage aPackage) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public void processClientPackage(AbstractPackage aPackage) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void processServerPackage(AbstractPackage aPackage) 
-	{
-		// TODO Auto-generated method stub
-		
-	}	
-	
 }
