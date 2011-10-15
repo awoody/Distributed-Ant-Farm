@@ -1,5 +1,7 @@
 package engine;
 
+import communication.AbstractPackage;
+import communication.NodeId;
 import communication.Portal;
 
 
@@ -19,7 +21,6 @@ public class AbstractMasterEngine extends AbstractEngine
 	{
 		super(aPortal);
 		// TODO Auto-generated constructor stub
-	}	
-
+	}
 
 }

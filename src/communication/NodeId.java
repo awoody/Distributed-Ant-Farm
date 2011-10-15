@@ -1,5 +1,7 @@
 package communication;
 
+import java.io.Serializable;
+
 /**
  * A wrapper class for an integer which represents a node
  * connected to the network.  That node can be either a client,
@@ -12,9 +14,20 @@ package communication;
  *         CS 587 Fall 2011 - DAF Project Group
  *
  */
-public class NodeId 
+public class NodeId implements Serializable
 {
-	private int nodeId;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6331996288967491489L;
+	private int nodeId; //The id of this node
+	private int parentNodeId; //The id of this node's parent.
+	
+	public NodeId(int node, int parent)
+	{
+		this.nodeId = node;
+		this.parentNodeId = parent;
+	}
 	
 	public void setId(int Id)
 	{
@@ -25,4 +38,50 @@ public class NodeId
 	{
 		return nodeId;
 	}
+
+	public String toString()
+	{
+		return "Node: " + parentNodeId + "|" + nodeId;
+	}
+	
+	public int getParentNodeId() 
+	{
+		return parentNodeId;
+	}
+
+	public void setParentNodeId(int parentNodeId) 
+	{
+		this.parentNodeId = parentNodeId;
+	}
+
+	@Override
+	public int hashCode() 
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + nodeId;
+		result = prime * result + parentNodeId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) 
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		NodeId other = (NodeId) obj;
+		if (nodeId != other.nodeId)
+			return false;
+		if (parentNodeId != other.parentNodeId)
+			return false;
+		return true;
+	}
+
+
+	
+	
 }

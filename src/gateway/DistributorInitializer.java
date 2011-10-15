@@ -21,7 +21,7 @@ public class DistributorInitializer
 	 * 
 	 * @param args
 	 */
-	public void main(String [] args)
+	public static void main(String[] args)
 	{
 		new Distributor().run();
 	}

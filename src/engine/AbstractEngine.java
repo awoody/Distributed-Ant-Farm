@@ -16,7 +16,7 @@ import communication.Recipient;
  */
 public abstract class AbstractEngine implements Recipient
 {
-	private final Portal portal;
+	protected final Portal portal;
 	
 	/**
 	 * All abstract engine constructors must at least

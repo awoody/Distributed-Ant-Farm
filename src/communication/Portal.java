@@ -42,4 +42,6 @@ public interface Portal
 	 * @param aRecipient
 	 */
 	public void setRecipient(Recipient aRecipient);
+
+	void dispatchDirectlyToMaster(AbstractPackage aPackage);
 }

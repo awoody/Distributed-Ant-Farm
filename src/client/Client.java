@@ -1,55 +1,61 @@
 package client;
 import java.net.Socket;
+import java.util.Set;
 import java.io.*;
 
-import antImplementation.Ant;
+import utilities.A;
 
+import antImplementation.Ant;
+import antImplementation.AntDummyPackage;
+
+import communication.AbstractPackage;
 import communication.AbstractPortal;
+import communication.NodeId;
 
 public class Client extends AbstractPortal
 {
-	private Socket socket;
-	private PrintWriter printWriter;
+	private NodeConnection connection;
 	
 	public void run()
 	{		
-		
-		String msg = "a";		
-		BufferedReader reader;
-
 		try 
-		{
-			socket = new Socket("localhost",11000);
-			BufferedReader portReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			int connectPort = Integer.parseInt(portReader.readLine());
+		{			
+			Socket socket = new Socket("localhost", 11000);
+			connection = new NodeConnection(socket);
+			Thread connectionThread = new Thread(connection);
+			connectionThread.start();
 			
-			System.out.println("connecting to port: " + connectPort);
-			socket = new Socket("localhost", connectPort);
-			
-			printWriter = new PrintWriter(socket.getOutputStream(), true);
+			A.say("Client connected to server.");
+			while(true)
+			{
+				AntDummyPackage p = new AntDummyPackage(nodeId);
+				p.setDummyValue("Leaving the client!");
+				dispatchPackage(p, null);
+				Thread.sleep(10000);
+			}
 		} 
 		catch (Exception e)
 		{
 			e.printStackTrace();
-		}
-		
-		
-		while (msg!=null)
-		{
-			reader = new BufferedReader(new InputStreamReader(System.in));
-			try {
-				msg = reader.readLine();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			printWriter.println(msg);
-		}
-		
-		try {
-			socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
+		}		
+	}
+
+	@Override
+	public Set<NodeId> getAllConnectedNodes() 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients) 
+	{
+		connection.send(aPackage);
+	}
+
+	@Override
+	public void dispatchDirectlyToMaster(AbstractPackage aPackage) 
+	{
+		//Not allowed by client.
 	}	
 }

@@ -1,8 +1,16 @@
 package communication;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
+
+import antImplementation.AntInitializationPackage;
+
+import utilities.A;
 
 
 /**
@@ -27,9 +35,8 @@ import java.util.Set;
  */
 public abstract class AbstractPortal implements Portal, Runnable
 {
-	private Recipient recipient;
-	private NodeId nodeId;
-	private Map<NodeId, Socket> allConnectedNodes;
+	protected Recipient recipient;
+	protected NodeId nodeId;
 	
 	/**
 	 * Given an abstract package and a set of recipients, uses the NodeIds
@@ -38,12 +45,12 @@ public abstract class AbstractPortal implements Portal, Runnable
 	 * in the all connected nodes map.
 	 */
 	@Override
-	public void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
+	public abstract void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients); 
 
+	@Override
+	public abstract void dispatchDirectlyToMaster(AbstractPackage aPackage); 
+	
+	
 	/**
 	 * Sets the nodeId of this portal.
 	 * 
@@ -51,24 +58,15 @@ public abstract class AbstractPortal implements Portal, Runnable
 	 */
 	public void setNodeId(NodeId id) 
 	{
-		// TODO Auto-generated method stub
+		nodeId = id;
 	}
 
-	
 	/* (non-Javadoc)
 	 * @see communication.Portal#getNodeId()
 	 */
 	public NodeId getNodeId() 
 	{
 		return nodeId;
-	}
-	
-	/* (non-Javadoc)
-	 * @see communication.Portal#getAllConnectedNodes()
-	 */
-	public Set<NodeId> getAllConnectedNodes()
-	{
-		return allConnectedNodes.keySet();	
 	}
 	
 
@@ -86,6 +84,143 @@ public abstract class AbstractPortal implements Portal, Runnable
 	 */
 	public void run()
 	{
+		
+	}
+	
+	public class NodeConnection implements Runnable
+	{
+		private Socket s;
+		private boolean isOpen;
+		private ObjectInputStream inputStream;
+		private ObjectOutputStream outputStream;
+		
+		public NodeConnection(Socket s)
+		{
+			this.s = s;		
+			try 
+			{
+				outputStream = new ObjectOutputStream(s.getOutputStream());
+				inputStream = new ObjectInputStream(s.getInputStream());
+				isOpen = true;
+			} 
+			catch (IOException e) 
+			{
+				A.say("Warning, the requested client connection was not properly initialized!");
+				isOpen = false;
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public void run() 
+		{	
+			while(isOpen)
+			{	
+				try 
+				{
+					Object o;
+					try 
+					{
+						if((o = inputStream.readObject()) != null)
+						{
+							A.say("Reading from input stream");
+							
+							AbstractPackage p;
+
+							p = (AbstractPackage) o;
+							
+							if(p instanceof InitializationPackage)
+							{								
+								nodeId = ((InitializationPackage) p).getIdForNewNode();
+								A.say("Node Connection received package.  Setting nodeId to " + nodeId);
+							}
+							
+							if(p instanceof DistributorPackage)
+							{
+								//If this is a distributor package, this connection must be totally
+								//reset on a new port.
+								resetNodeConnection(((DistributorPackage) p).getNewPortId());
+							}
+								
+							recipient.receivePackage(p);
+						}
+					}
+					catch (ClassNotFoundException e) 
+					{
+						e.printStackTrace();
+					}
+				} 
+				catch(IOException e)
+				{
+				
+				}
+			}
+
+		}
+		
+		public void resetNodeConnection(int newPort)
+		{
+			isOpen = false; //close the connection.
+			s = null;
+			outputStream = null;
+			inputStream = null;
+						
+			try 
+			{
+				A.say("Will attempt to open new connection to: " + newPort);
+				s = new Socket("localhost", newPort);	
+				outputStream = new ObjectOutputStream(s.getOutputStream());
+				inputStream = new ObjectInputStream(s.getInputStream());
+				isOpen = true;
+			} 
+			catch (IOException e) 
+			{
+				A.say("Warning, failed to properly reset the nodeConnection.  Socket is not open.");
+				isOpen = false;
+				e.printStackTrace();
+			}
+			
+		}
+		
+		
+		public void send(AbstractPackage o)
+		{
+			//Without a node id, you can only receive.
+			//If you aren't open, however, you can't do anything.
+			if(nodeId == null || !isOpen) 
+			{
+				A.say("Cannot send packages without valid nodeId");
+				return;
+			}
+			
+			try 
+			{
+				outputStream.writeObject(o);
+				A.say("Sent a package from " + nodeId);
+			} 
+			catch (IOException e) 
+			{
+				A.say("Unable to send the requested object from a Node Connection");
+				e.printStackTrace();
+			}
+		}
+		
+		public void closeConnection()
+		{
+			try 
+			{
+				s.close();
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+			finally
+			{
+				isOpen = false;
+			}
+			
+		}
 		
 	}
 }
