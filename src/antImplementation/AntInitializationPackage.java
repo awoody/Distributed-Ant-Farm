@@ -22,6 +22,8 @@ public class AntInitializationPackage extends AbstractPackage implements Initial
 	{
 		super(id);
 		this.antId = antId;
+		this.antSegment = firstSegment;
+		this.startingSpot = startingLocation;
 		// TODO Auto-generated constructor stub
 	}
 

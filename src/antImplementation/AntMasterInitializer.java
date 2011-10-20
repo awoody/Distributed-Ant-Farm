@@ -17,6 +17,6 @@ public class AntMasterInitializer extends AbstractMasterInitializer
 	{
 		Master master = new Master();
 		new Thread(new MasterAntFarm(master)).start();
-		new Thread(master).run();
+		new Thread(master).start();
 	}
 }

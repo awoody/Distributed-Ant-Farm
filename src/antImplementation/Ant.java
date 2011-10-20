@@ -74,9 +74,8 @@ public class Ant extends AbstractClientEngine
 	{
 		while(true)
 		{
-			if(currentLocation != null)
+			if(dataCurrent)
 			{
-				
 				//Allows ants to make random move descisions as proof of concept.
 				int x = currentLocation.x;
 				int y = currentLocation.y;
