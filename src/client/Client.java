@@ -38,6 +38,7 @@ public class Client extends AbstractPortal
 	@Override
 	public void dispatchPackage(AbstractPackage aPackage, List<NodeId> recipients) 
 	{
+		A.say("Test");
 		if(recipients != null)
 			throw new IllegalArgumentException("Recipients should always be null on calls to dispatch package from the client, since the only recipient is the current satellite.");
 		

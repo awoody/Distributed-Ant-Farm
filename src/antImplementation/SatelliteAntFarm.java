@@ -153,7 +153,10 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 	{
 		Point defaultPoint = new Point(allBlocks.length / 2, allBlocks.length / 2);
 		AbstractBlock[][] startingSegment = getSegmentForPointWithRadius(defaultPoint, 3);
-		return new AntInitializationPackage(id, ++antId, startingSegment, defaultPoint);
+		AntInitializationPackage newAnt = new AntInitializationPackage(portal.getNodeId(), ++antId, startingSegment, defaultPoint);
+		newAnt.setIdForNewNode(id);
+		
+		return newAnt;
 	}
 
 	public void generateAndDispatchUpdateToMaster()

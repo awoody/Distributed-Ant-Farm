@@ -16,8 +16,10 @@ public class AntClientInitializer extends AbstractClientInitializer
 	public static void main(String[] args) 
 	{
 		Client client = new Client();
-		new Thread(new Ant(client)).start();
-		new Thread(client).run();
-		
+		Ant ant = new Ant(client);
+		Thread a = new Thread(ant);
+		Thread b = new Thread(client);
+		a.start();
+		b.start();
 	}
 }

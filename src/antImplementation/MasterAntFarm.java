@@ -74,7 +74,7 @@ public class MasterAntFarm extends AbstractMasterEngine implements ModificationQ
 	public AbstractPackage packageForNewConnection(NodeId id)
 	{
 		SatelliteInitializationPackage p = new SatelliteInitializationPackage(portal.getNodeId(), allBlocks, lastKnownAntId);
-		
+		p.setIdForNewNode(id);
 		return p;
 	}
 

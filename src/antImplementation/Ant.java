@@ -72,9 +72,9 @@ public class Ant extends AbstractClientEngine
 	@Override
 	public void run()
 	{
-		while(isRunning)
+		while(true)
 		{
-			if(dataCurrent)
+			if(currentLocation != null)
 			{
 				
 				//Allows ants to make random move descisions as proof of concept.

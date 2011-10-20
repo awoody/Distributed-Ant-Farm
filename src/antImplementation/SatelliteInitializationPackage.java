@@ -1,8 +1,9 @@
 package antImplementation;
 
+import communication.InitializationPackage;
 import communication.NodeId;
 
-public class SatelliteInitializationPackage extends AntMasterToSatellitePackage
+public class SatelliteInitializationPackage extends AntMasterToSatellitePackage implements InitializationPackage
 {
 	/**
 	 * 
@@ -10,6 +11,7 @@ public class SatelliteInitializationPackage extends AntMasterToSatellitePackage
 	private static final long serialVersionUID = -8110552267140842491L;
 	private AbstractBlock [][] allBlocks;
 	private int lastKnownAntId;
+	private NodeId idForNewNode;
 	
 	public SatelliteInitializationPackage(NodeId id, AbstractBlock[][] allBlocks, int lastKnownAntId)
 	{
@@ -31,5 +33,17 @@ public class SatelliteInitializationPackage extends AntMasterToSatellitePackage
 	public String toString()
 	{
 		return "Satellite Initialization Package from " + this.nodeId() + " with updates for new satellite.";
+	}
+
+	@Override
+	public void setIdForNewNode(NodeId idForNewNode)
+	{
+		this.idForNewNode = idForNewNode;
+	}
+
+	@Override
+	public NodeId getIdForNewNode()
+	{
+		return idForNewNode;
 	}
 }
