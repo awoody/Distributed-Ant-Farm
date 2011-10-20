@@ -10,7 +10,7 @@ import communication.Portal;
  *         CS 587 Fall 2011 - DAF Project Group
  *
  */
-public class AbstractSatelliteEngine extends AbstractEngine
+public abstract class AbstractSatelliteEngine extends AbstractEngine
 {
 	public AbstractSatelliteEngine(Portal aPortal) 
 	{

@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public class Distributor extends AbstractPortal
 {
 	private Queue<Integer> allSatellites;
 	private ServerSocket serverSocket;
-	int totalSatellites = 4;
+	int totalSatellites = 1;
 	private boolean isRunning;
 	
 	public Distributor()
@@ -80,13 +81,13 @@ public class Distributor extends AbstractPortal
 	}
 
 	@Override
-	public Set<NodeId> getAllConnectedNodes() {
+	public List<NodeId> getAllConnectedNodes() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients) {
+	public void dispatchPackage(AbstractPackage aPackage, List<NodeId> recipients) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -1,5 +1,8 @@
 package utilities;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * A is short for 'assistant'.  This class is designed
  * to contain any methods which are generally helpful to anything
@@ -7,9 +10,10 @@ package utilities;
  * of the major high-level objects.  
  * 
  * @author DeepBlue
+ * @param <E>
  *
  */
-public class A 
+public class A<E> 
 {
 	public final static boolean isDebug = true;
 	
@@ -31,4 +35,6 @@ public class A
 		
 		System.out.println(o);
 	}
+	
+
 }

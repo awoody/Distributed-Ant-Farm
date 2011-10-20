@@ -1,6 +1,8 @@
 package communication;
 
-import java.util.Set;
+
+import java.util.List;
+
 import utilities.A;
 
 /**
@@ -20,7 +22,7 @@ public interface Portal
 	 * @param aPackage - The Package to Send.
 	 * @param recipients - A set of nodeId objects designating the recipients of the package.
 	 */
-	public void dispatchPackage(AbstractPackage aPackage, Set<NodeId>recipients);
+	public void dispatchPackage(AbstractPackage aPackage, List<NodeId>recipients);
 	
 	/**
 	 * Returns the nodeId of this portal.
@@ -32,7 +34,7 @@ public interface Portal
 	 * a satelliteServer would return the nodeIds of all connected clients, as well as the 
 	 * master server.  The master server would return all of the satellite servers.
 	 */
-	public Set<NodeId> getAllConnectedNodes();
+	public List<NodeId> getAllConnectedNodes();
 	
 	/**
 	 * Sets the portal's recipient as passed in.  For all incoming packages to this

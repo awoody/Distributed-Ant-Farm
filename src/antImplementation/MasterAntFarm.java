@@ -1,6 +1,9 @@
 package antImplementation;
 
+import java.awt.Point;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import utilities.A;
@@ -18,13 +21,30 @@ import engine.AbstractMasterEngine;
  *         CS 587 Fall 2011 - DAF Project Group
  *
  */
-public class MasterAntFarm extends AbstractMasterEngine
+public class MasterAntFarm extends AbstractMasterEngine implements ModificationQueue
 {
-
+	private AbstractBlock[][] allBlocks;
+	private int gridSize = 32;
+	private List<AbstractBlock> abstractBlockModQueue;
+	private int lastKnownAntId;
+	
 	public MasterAntFarm(Portal aPortal) 
 	{
 		super(aPortal);
 		// TODO Auto-generated constructor stub
+		
+		abstractBlockModQueue = new LinkedList<AbstractBlock>();
+		AbstractBlock.setModQueue(this);
+		
+		
+		allBlocks = new AbstractBlock[gridSize][gridSize];
+		for(int i=0; i < gridSize; i++)
+		{
+			for(int j=0; j < gridSize; j++)
+			{
+				allBlocks[i][j] = new GenericBlock(new Point(j, i));
+			}
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -32,22 +52,65 @@ public class MasterAntFarm extends AbstractMasterEngine
 	 */
 	public void receivePackage(AbstractPackage aPackage)
 	{
-		if(aPackage instanceof AntDummyPackage)
+		A.say("Master " + portal.getNodeId() + " received package " + aPackage.toString());
+		
+		if(aPackage instanceof SatelliteUpdatePackage)
 		{
-			AntDummyPackage p = (AntDummyPackage) aPackage;
-			A.say("Master Farm Recived a package: " + p.getDummyValue() + " from node: " + p.nodeId());
-			p.setDummyValue("Message from master to satellites: Satellite " + p.nodeId() + " informed master of movement (" + p.getDummyValue() + ")");
-			Set<NodeId> allNodes = new HashSet<NodeId>();
-			allNodes.remove(p.nodeId()); //Don't send the message back to the original node.
-			portal.dispatchPackage(aPackage, allNodes);
+			processSatelliteUpdatePackage((SatelliteUpdatePackage) aPackage);
+		}
+	}
+	
+	private void processSatelliteUpdatePackage(SatelliteUpdatePackage p)
+	{
+		for(AbstractBlock block : p.getUpdatedBlocks())
+		{
+			Point location = block.getLocation();
+			lastKnownAntId = p.getLastKnownAntId();
+			AbstractBlock targetBlock = allBlocks[location.y][location.x];
+			targetBlock.updateFromBlockAndBroadcast(block);
 		}
 	}
 	
 	public AbstractPackage packageForNewConnection(NodeId id)
 	{
-		AntInitializationPackage p = new AntInitializationPackage(portal.getNodeId());
-		p.setIdForNewNode(id);
+		SatelliteInitializationPackage p = new SatelliteInitializationPackage(portal.getNodeId(), allBlocks, lastKnownAntId);
 		
 		return p;
+	}
+
+	private void generateAndDispatchUpdateForSatellites()
+	{
+		if(abstractBlockModQueue.isEmpty())
+			return;
+		
+		MasterUpdatePackage p = new MasterUpdatePackage(portal.getNodeId(), abstractBlockModQueue, lastKnownAntId);
+		abstractBlockModQueue.clear();
+	}
+	
+	@Override
+	public void run()
+	{
+		while(true)
+		{
+			//Push the update queue every 5 seconds and then sleep.
+			generateAndDispatchUpdateForSatellites();
+			
+			try 
+			{
+				Thread.sleep(5000);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+	}
+
+	@Override
+	public void addAbstractBlockToModQueue(AbstractBlock b)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

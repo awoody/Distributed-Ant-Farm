@@ -1,5 +1,8 @@
 package engine;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import communication.AbstractPackage;
 import communication.NodeId;
 import communication.Portal;
@@ -14,7 +17,7 @@ import communication.Recipient;
  *         CS 587 Fall 2011 - DAF Project Group
  *
  */
-public abstract class AbstractEngine implements Recipient
+public abstract class AbstractEngine implements Recipient, Runnable
 {
 	protected final Portal portal;
 	
@@ -59,6 +62,15 @@ public abstract class AbstractEngine implements Recipient
 	public AbstractPackage packageForNewConnection(NodeId id)
 	{
 		return null;
+	}
+	
+	public static <E> List<E> setFromSingleton(E object)
+	{
+		LinkedList<E> newList = new LinkedList<E>();
+		
+		newList.add(object);
+		
+		return newList;
 	}
 
 }

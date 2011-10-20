@@ -1,12 +1,7 @@
 package client;
 import java.net.Socket;
-import java.util.Set;
-import java.io.*;
-
+import java.util.List;
 import utilities.A;
-
-import antImplementation.Ant;
-import antImplementation.AntDummyPackage;
 
 import communication.AbstractPackage;
 import communication.AbstractPortal;
@@ -26,13 +21,6 @@ public class Client extends AbstractPortal
 			connectionThread.start();
 			
 			A.say("Client connected to server.");
-			while(true)
-			{
-				AntDummyPackage p = new AntDummyPackage(nodeId);
-				p.setDummyValue("Leaving the client!");
-				dispatchPackage(p, null);
-				Thread.sleep(10000);
-			}
 		} 
 		catch (Exception e)
 		{
@@ -41,21 +29,25 @@ public class Client extends AbstractPortal
 	}
 
 	@Override
-	public Set<NodeId> getAllConnectedNodes() 
+	public List<NodeId> getAllConnectedNodes() 
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients) 
+	public void dispatchPackage(AbstractPackage aPackage, List<NodeId> recipients) 
 	{
+		if(recipients != null)
+			throw new IllegalArgumentException("Recipients should always be null on calls to dispatch package from the client, since the only recipient is the current satellite.");
+		
+		A.say("Client " + nodeId + " sending package " + aPackage.toString());
 		connection.send(aPackage);
 	}
 
 	@Override
 	public void dispatchDirectlyToMaster(AbstractPackage aPackage) 
 	{
-		//Not allowed by client.
+		return;
 	}	
 }

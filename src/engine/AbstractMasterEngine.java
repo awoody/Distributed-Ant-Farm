@@ -14,10 +14,10 @@ import communication.Portal;
  *         CS 587 Fall 2011 - DAF Project Group
  *
  */
-public class AbstractMasterEngine extends AbstractEngine
+public abstract class AbstractMasterEngine extends AbstractEngine
 {
 
-	public AbstractMasterEngine(Portal aPortal) 
+	public AbstractMasterEngine(Portal aPortal)
 	{
 		super(aPortal);
 		// TODO Auto-generated constructor stub

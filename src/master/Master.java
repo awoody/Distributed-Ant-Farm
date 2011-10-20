@@ -74,24 +74,23 @@ public class Master extends AbstractPortal
 	/* (non-Javadoc)
 	 * @see communication.Portal#getAllConnectedNodes()
 	 */
-	public Set<NodeId> getAllConnectedNodes()
+	public List<NodeId> getAllConnectedNodes()
 	{
-		return allConnectedNodes.keySet();	
+		return null;
 	}
 	
 	@Override
-	public void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients)
+	public void dispatchPackage(AbstractPackage aPackage, List<NodeId> recipients)
 	{
 		for(NodeId node : recipients)
 		{
-			A.say("Attempting to send a message to node: " + node.getId());
+			A.say("Master " + nodeId + " sending package " + aPackage.toString());
 			
 			NodeConnection c = allConnectedNodes.get(node);
 			
 			if(c != null)
 			{	
 				c.send(aPackage);
-				A.say("Sent a package from " + nodeId + " to " + node);
 			}
 		}
 	}

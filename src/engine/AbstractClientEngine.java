@@ -10,7 +10,7 @@ import communication.Portal;
  *         CS 587 Fall 2011 - DAF Project Group
  *
  */
-public class AbstractClientEngine extends AbstractEngine
+public abstract class AbstractClientEngine extends AbstractEngine
 {
 
 	public AbstractClientEngine(Portal aPortal) 
@@ -18,5 +18,6 @@ public class AbstractClientEngine extends AbstractEngine
 		super(aPortal);
 		// TODO Auto-generated constructor stub
 	}
+
 
 }

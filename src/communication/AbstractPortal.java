@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,11 +42,10 @@ public abstract class AbstractPortal implements Portal, Runnable
 	/**
 	 * Given an abstract package and a set of recipients, uses the NodeIds
 	 * in the set to ensure that every recipient in the list recieves the package
-	 * by transferring that package over the socket corresponding to that nodeId
-	 * in the all connected nodes map.
+	 * by transferring that package over the socket corresponding to                              
 	 */
 	@Override
-	public abstract void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients); 
+	public abstract void dispatchPackage(AbstractPackage aPackage, List<NodeId> recipients); 
 
 	@Override
 	public abstract void dispatchDirectlyToMaster(AbstractPackage aPackage); 

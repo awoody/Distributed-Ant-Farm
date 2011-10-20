@@ -81,24 +81,23 @@ public class SatelliteServer extends AbstractPortal
 	/* (non-Javadoc)
 	 * @see communication.Portal#getAllConnectedNodes()
 	 */
-	public Set<NodeId> getAllConnectedNodes()
+	public List<NodeId> getAllConnectedNodes()
 	{
-		return allConnectedNodes.keySet();	
+		return null;
 	}
 	
 	@Override
-	public void dispatchPackage(AbstractPackage aPackage, Set<NodeId> recipients)
+	public void dispatchPackage(AbstractPackage aPackage, List<NodeId> recipients)
 	{		
 		for(NodeId node : recipients)
 		{
-			A.say("Satelite attempting to message client: " + node);
+			A.say("Satellite " + nodeId + " sending package " + aPackage.toString());
 			
 			NodeConnection c = allConnectedNodes.get(node);
 			
 			if(c != null)
 			{	
 				c.send(aPackage);
-				A.say("Sent a package from satellite " + nodeId + " to " + node);
 			}
 		}
 	}
