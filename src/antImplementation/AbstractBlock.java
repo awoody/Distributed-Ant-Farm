@@ -60,7 +60,7 @@ public abstract class AbstractBlock implements Serializable
 	
 	public synchronized void removeAnt(int antId)
 	{
-		A.say("Block " + this + " removing ant" + antId);
+		A.say("Block " + this + " removing ant " + antId);
 		Integer antIdO = new Integer(antId);
 		allAntsThisCell.remove(antIdO);
 		modificationQueue.addAbstractBlockToModQueue(this);

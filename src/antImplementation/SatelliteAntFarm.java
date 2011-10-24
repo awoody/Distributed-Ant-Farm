@@ -171,9 +171,12 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 			return;
 		}
 		
-		SatelliteUpdatePackage updatePackage = new SatelliteUpdatePackage(portal.getNodeId(), abstractBlockModQueue, antId);
-		portal.dispatchDirectlyToMaster(updatePackage);
-		abstractBlockModQueue.clear();
+		synchronized(abstractBlockModQueue)
+		{	
+			SatelliteUpdatePackage updatePackage = new SatelliteUpdatePackage(portal.getNodeId(), abstractBlockModQueue, antId);
+			portal.dispatchDirectlyToMaster(updatePackage);
+			abstractBlockModQueue = new ArrayList<AbstractBlock>();
+		}
 	}
 	
 	@Override
@@ -200,8 +203,11 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 	@Override
 	public void addAbstractBlockToModQueue(AbstractBlock b)
 	{
-		A.say("Satellite farm adding: " + " b " + " to mod queue");
-		abstractBlockModQueue.add(b);
+		synchronized(abstractBlockModQueue)
+		{
+			A.say("Satellite farm adding: " +  b  + " to mod queue");
+			abstractBlockModQueue.add(b);
+		}
 	}
 
 }
