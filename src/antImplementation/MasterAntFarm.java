@@ -62,10 +62,13 @@ public class MasterAntFarm extends AbstractMasterEngine implements ModificationQ
 	
 	private void processSatelliteUpdatePackage(SatelliteUpdatePackage p)
 	{
+		lastKnownAntId = p.getLastKnownAntId();
+		
 		for(AbstractBlock block : p.getUpdatedBlocks())
 		{
+			
 			Point location = block.getLocation();
-			lastKnownAntId = p.getLastKnownAntId();
+			A.say("Master attempting to update block at: " + location.x + " " + location.y);
 			AbstractBlock targetBlock = allBlocks[location.y][location.x];
 			targetBlock.updateFromBlockAndBroadcast(block);
 		}
@@ -81,9 +84,13 @@ public class MasterAntFarm extends AbstractMasterEngine implements ModificationQ
 	private void generateAndDispatchUpdateForSatellites()
 	{
 		if(abstractBlockModQueue.isEmpty())
+		{
+			A.say("There are no updates for the master ant farm to broadcast.");
 			return;
+		}
 		
 		MasterUpdatePackage p = new MasterUpdatePackage(portal.getNodeId(), abstractBlockModQueue, lastKnownAntId);
+		portal.dispatchPackage(p, null); //Master dispatches to all satellites automagically
 		abstractBlockModQueue.clear();
 	}
 	
@@ -93,6 +100,7 @@ public class MasterAntFarm extends AbstractMasterEngine implements ModificationQ
 		while(true)
 		{
 			//Push the update queue every 5 seconds and then sleep.
+			A.say("Master ant farm broadcasting update to satellites.");
 			generateAndDispatchUpdateForSatellites();
 			
 			try 
@@ -110,7 +118,8 @@ public class MasterAntFarm extends AbstractMasterEngine implements ModificationQ
 	@Override
 	public void addAbstractBlockToModQueue(AbstractBlock b)
 	{
-		// TODO Auto-generated method stub
+		A.say("Adding block to mod queue.");
+		abstractBlockModQueue.add(b);
 		
 	}
 }

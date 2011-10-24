@@ -33,6 +33,13 @@ public class SatelliteUpdatePackage extends AntSatelliteToMasterPackage
 	
 	public String toString()
 	{
-		return "SatelliteUpdatePackage from " + this.nodeId() + " containing updated blocks for master.";
+		String updateText = "SatelliteUpdatePackage from " + this.nodeId() + " containing " + updatedBlocks.size() + " updated blocks for master.";
+		
+		for(AbstractBlock block : updatedBlocks)
+		{
+			updateText += "  " + block;
+		}
+		
+		return updateText;
 	}
 }

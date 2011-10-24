@@ -22,7 +22,6 @@ public class Ant extends AbstractClientEngine
 	private boolean isRunning;
 	private boolean dataCurrent;
 	private Point currentLocation;
-	private Random randomGenerator;
 	private int antId;
 	private AbstractBlock[][] blockSegment;
 
@@ -31,7 +30,6 @@ public class Ant extends AbstractClientEngine
 		super(aPortal);
 		// TODO Auto-generated constructor stub
 		isRunning = true;
-		randomGenerator = new Random(System.currentTimeMillis());
 		dataCurrent = false;
 		
 		antId = -1;
@@ -64,40 +62,42 @@ public class Ant extends AbstractClientEngine
 		//As long as the antId is there, I can only assume that the last
 		//update made the data current and the run loop can continue.
 		if(antId >= 0)
+		{	
 			dataCurrent = true;
-		
+			A.say("Ant " + portal.getNodeId() + " has an id " + antId + " and therefore has current data.");
+		}
 		return;
 	}
 
 	@Override
 	public void run()
 	{
+		A.say("Starting the ant thread.");
+		
 		while(true)
 		{
 			if(dataCurrent)
 			{
-				//Allows ants to make random move descisions as proof of concept.
-				int x = currentLocation.x;
-				int y = currentLocation.y;
 				
-				int nextX = randomGenerator.nextInt(2);
-				int nextY = randomGenerator.nextInt(2);
 				
-				x+=nextX; 
-				y+=nextY;
+				//Allows ants to make random move descisions as proof of concept.		
+				Direction d = Direction.randomDirection();
+				A.say("Generating a random move: Going " + d);
+				Point newPoint = Direction.modifyPointByDirection(currentLocation, Direction.randomDirection());
 				
-				AntMovementPackage moveMe = new AntMovementPackage(portal.getNodeId(), antId, currentLocation, new Point(x, y));
+				AntMovementPackage moveMe = new AntMovementPackage(portal.getNodeId(), antId, currentLocation, newPoint);
 				portal.dispatchPackage(moveMe, null);
-				
-				try
-				{
-					Thread.sleep(10000);
-				}
-				catch (InterruptedException e) 
-				{
-					A.say("Client thread was interrupted during sleep call");
-					e.printStackTrace();
-				}
+			}
+			
+			try
+			{
+				A.say("Ant sleeping for 10 seconds.");
+				Thread.sleep(10000);
+			}
+			catch (InterruptedException e) 
+			{
+				A.say("Client thread was interrupted during sleep call");
+				e.printStackTrace();
 			}
 			
 		}

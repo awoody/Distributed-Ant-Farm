@@ -71,7 +71,7 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 		Point oldLocation = p.getInitialPoint();
 		
 		//Remove the ant from the old block.
-		AbstractBlock oldBlock = allBlocks[oldLocation.x][oldLocation.y];
+		AbstractBlock oldBlock = allBlocks[oldLocation.y][oldLocation.x];
 		oldBlock.removeAnt(antId);
 		
 		//Add it to the new block
@@ -104,6 +104,8 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 			AbstractBlock targetBlock = allBlocks[location.y][location.x];
 			targetBlock.updateFromBlock(block);
 		}
+		
+		antId = p.getLastKnownAntId();
 	}
 	
 	public AbstractBlock[][] getSegmentForPointWithRadius(Point p, int radius)
@@ -152,8 +154,10 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 	public AbstractPackage packageForNewConnection(NodeId id)
 	{
 		Point defaultPoint = new Point(allBlocks.length / 2, allBlocks.length / 2);
+		AbstractBlock startingBlock = allBlocks[defaultPoint.y][defaultPoint.x];
+		startingBlock.addAnt(++antId);
 		AbstractBlock[][] startingSegment = getSegmentForPointWithRadius(defaultPoint, 3);
-		AntInitializationPackage newAnt = new AntInitializationPackage(portal.getNodeId(), ++antId, startingSegment, defaultPoint);
+		AntInitializationPackage newAnt = new AntInitializationPackage(portal.getNodeId(), antId, startingSegment, defaultPoint);
 		newAnt.setIdForNewNode(id);
 		
 		return newAnt;
@@ -162,7 +166,10 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 	public void generateAndDispatchUpdateToMaster()
 	{
 		if(abstractBlockModQueue.isEmpty())
+		{	
+			A.say("Satellite has no updates to push to master.");
 			return;
+		}
 		
 		SatelliteUpdatePackage updatePackage = new SatelliteUpdatePackage(portal.getNodeId(), abstractBlockModQueue, antId);
 		portal.dispatchDirectlyToMaster(updatePackage);
@@ -175,6 +182,7 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 		while(true)
 		{
 			//Push the update queue every 5 seconds and then sleep.
+			A.say("Satellite pushing updates to master server.");
 			generateAndDispatchUpdateToMaster();
 			
 			try 
@@ -192,6 +200,7 @@ public class SatelliteAntFarm extends AbstractSatelliteEngine implements Modific
 	@Override
 	public void addAbstractBlockToModQueue(AbstractBlock b)
 	{
+		A.say("Satellite farm adding: " + " b " + " to mod queue");
 		abstractBlockModQueue.add(b);
 	}
 

@@ -20,6 +20,7 @@ public class MasterUpdatePackage extends AntMasterToSatellitePackage
 		// TODO Auto-generated constructor stub
 		
 		this.updatedBlocks = updatedBlocks;
+		this.lastKnownAntId = lastKnownAntId;
 	}
 
 	public int getLastKnownAntId()

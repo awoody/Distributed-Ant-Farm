@@ -105,7 +105,7 @@ public class SatelliteServer extends AbstractPortal
 	@Override
 	public void dispatchDirectlyToMaster(AbstractPackage aPackage) 
 	{
-		A.say("Satellite dispatching a message to the master.");
+		A.say("Satellite dispatching a message to the master: " + aPackage);
 		connectionToMaster.send(aPackage);	
 	}
 }

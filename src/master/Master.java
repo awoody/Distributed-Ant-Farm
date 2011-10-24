@@ -82,9 +82,9 @@ public class Master extends AbstractPortal
 	@Override
 	public void dispatchPackage(AbstractPackage aPackage, List<NodeId> recipients)
 	{
-		for(NodeId node : recipients)
+		for(NodeId node : allConnectedNodes.keySet())
 		{
-			A.say("Master " + nodeId + " sending package " + aPackage.toString());
+			A.say("Master " + nodeId + " sending package " + aPackage.toString() + " to " + node);
 			
 			NodeConnection c = allConnectedNodes.get(node);
 			
