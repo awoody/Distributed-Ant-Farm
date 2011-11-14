@@ -2,6 +2,8 @@ package communication;
 
 import java.io.Serializable;
 
+import utilities.A;
+
 public class InvocationPackage extends AbstractPackage
 {
 	/**
@@ -21,8 +23,14 @@ public class InvocationPackage extends AbstractPackage
 		{	
 			for(Object o : arguments)
 			{
+				if(o == null)
+				{
+					A.error("A null argument was provided to the invocation package's arguments for a method call..");
+					continue;
+				}
+				
 				if(!(o instanceof Serializable))
-					throw new IllegalArgumentException("All arguments to an invocation package must be serializable");
+					throw new IllegalArgumentException("All arguments to an invocation package must be serializable.  Object: " + o.getClass() + " is not.");
 			}
 		}
 		
@@ -58,7 +66,7 @@ public class InvocationPackage extends AbstractPackage
 	@Override
 	public String toString()
 	{
-		return "Method invocation package from: " + sourceId + " for method: " + methodName + " with arguments: " + arguments + " isSynchronous: " + isSynchronous + " messageId: " + messageId;	
+		return "Synchronous: " + isSynchronous + " Method invocation package from: " + sourceId + " for method: " + methodName;	
 	}
 
 }

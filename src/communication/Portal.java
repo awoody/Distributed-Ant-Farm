@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import rpc.AnnotatedObject;
 import rpc.RPCInjectionModule;
@@ -52,6 +54,7 @@ public abstract class Portal implements iPortal
 	protected Recipient recipient;
 	protected DistributorInterface distributor;
 	protected iConstants constants;
+	protected ExecutorService threadPool;
 	
 	public Portal(Recipient r, iConstants constants)
 	{
@@ -59,6 +62,28 @@ public abstract class Portal implements iPortal
 		this.constants = constants;
 		allConnections = new HashMap<NodeId, NodeConnection>();
 		injector = Guice.createInjector(new RPCInjectionModule(this));
+		threadPool = Executors.newCachedThreadPool();		
+		//if(getClass(). instanceof Distributor)
+	}
+	
+	
+	private void spinTilNodeId()
+	{
+		while(true)
+		{
+			if(this.getNodeId() != null)
+				break;
+			
+			try
+			{
+				Thread.sleep(0100);
+			}
+			catch (InterruptedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	
@@ -81,6 +106,8 @@ public abstract class Portal implements iPortal
 			distributor.setNodeId(distributorNodeId);
 			
 			this.distributor = (DistributorInterface) distributor;
+			
+			this.spinTilNodeId();
 		} 
 		catch (UnknownHostException e) 
 		{
@@ -105,6 +132,7 @@ public abstract class Portal implements iPortal
 			Socket connection = new Socket(objectLocation.getAddress(), objectLocation.getPortNumber());
 			
 			NodeConnection newConnection = new NodeConnection(connection);
+			
 			Thread connectionThread = new Thread(newConnection);
 			connectionThread.start();
 			
@@ -118,11 +146,11 @@ public abstract class Portal implements iPortal
 		} 
 		catch (UnknownHostException e) 
 		{
-			e.printStackTrace();
+			A.fatalError("Couldn't find the specified host.");
 		} 
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			A.fatalError("Couldn't establish connection.");
 		}
 		
 		return null;
@@ -213,9 +241,7 @@ public abstract class Portal implements iPortal
 			} 
 			catch (IOException e) 
 			{
-				A.say("Warning, the requested client connection was not properly initialized!");
-				isOpen = false;
-				e.printStackTrace();
+				A.fatalError("Warning, the requested client connection was not properly initialized!");				
 			}
 		}
 		
@@ -223,6 +249,9 @@ public abstract class Portal implements iPortal
 		@Override
 		public void run() 
 		{	
+			SynchronousCallHolder.setSocketListenerThread(Thread.currentThread());
+			
+			
 			while(isOpen)
 			{	
 				try 
@@ -232,8 +261,8 @@ public abstract class Portal implements iPortal
 					{
 						if((o = inputStream.readObject()) != null)
 						{
-							A.say("Reading from input stream");
 							AbstractPackage p = (AbstractPackage) o;
+							A.log("Read " + p + " from input stream.");
 							
 							if(p instanceof ResourceIdentificationPackage)
 							{
@@ -264,13 +293,13 @@ public abstract class Portal implements iPortal
 								if(recipient != null)
 									recipient.setNodeId(nodeId);
 								
-								A.say("Node Connection received init package.  Setting nodeId to " + nodeId);
+								//A.log("Node Connection received init package.  Setting nodeId to " + nodeId);
 							}														
 							else if(p instanceof InvocationPackage)
 							{
 								
 								InvocationPackage ip = (InvocationPackage) p;
-								A.say("Recived an invocation package " + ip);
+								//A.log("Recived an invocation package " + ip);
 								
 								//Thread all of the invocation packages off so that 
 								//the user methods that invoke them are able to make
@@ -278,12 +307,11 @@ public abstract class Portal implements iPortal
 								//deadlock would result as this listener thread got deadlocked
 								//waiting for input to come in.
 								RunnableInvocation ri = new RunnableInvocation(ip);
-								Thread invocationThread = new Thread(ri);
-								invocationThread.start();
+								threadPool.submit(ri);
 							}
 							else if(p instanceof ResponsePackage)
 							{
-								A.say("Received a response package");
+								//A.log("Received a response package.");
 								ResponsePackage response = (ResponsePackage) p;
 								
 								//This package must contain a response to something which was sent out at
@@ -295,26 +323,50 @@ public abstract class Portal implements iPortal
 							}
 							
 						}
+						
+						
 					}
 					catch (ClassNotFoundException e) 
 					{
-						e.printStackTrace();
+						A.fatalError("Unknown class sent over the object input stream.");
 					}
+
 				} 
 				catch(IOException e)
 				{
-				
+					e.printStackTrace();
+					A.error("IO Exception was thrown for this socket; socket will be closed.");
+					isOpen = false;
 				}
 			}
-
+			
+			try {
+				outputStream.close();
+				inputStream.close();
+				s.close();
+			}
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
 		}
 		
 		public void resetNodeConnection(int newPort)
 		{
 			isOpen = false; //close the connection.
-			s = null;
-			outputStream = null;
-			inputStream = null;
+
+			
+			try 
+			{
+				outputStream.close();
+				inputStream.close();
+				s.close();
+			}
+			catch (IOException e1) 
+			{
+				
+			}
+			
 						
 			try 
 			{
@@ -359,19 +411,18 @@ public abstract class Portal implements iPortal
 				
 				SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread());
 				outstandingSynchronousCalls.put(aPackage.messageId(), holder);
-				A.say("Blocking this thread");
+				//System.out.println("Blocking this thread with key: " + aPackage.messageId());
 				holder.holdThread(); //This will cause execution to block here until the message returns.
 				
 				//When execution gets to here, it means the holder's return value has been set by the listener
 				//thread and the thread which was trapped here has been resumed.  Good times.  We can return
 				//from this RPC with our return value and continue on our merry way.
 				o = holder.getReturnValue();
-				A.say("Thread was unblocked.");
+				//System.out.println("Thread was unblocked.");
 			} 
 			catch (IOException e) 
 			{
-				A.say("Unable to send the requested object from a Node Connection");
-				e.printStackTrace();
+				A.fatalError("Unable to send the requested object from a Node Connection");
 			}
 			
 			return o;
@@ -395,8 +446,7 @@ public abstract class Portal implements iPortal
 			} 
 			catch (IOException e) 
 			{
-				A.say("Unable to send the requested object from a Node Connection");
-				e.printStackTrace();
+				A.fatalError("Unable to send the requested object from a Node Connection");
 			}
 		}
 		

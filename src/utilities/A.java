@@ -1,6 +1,8 @@
 package utilities;
 
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,31 +46,95 @@ public class A
 	 * output for demonstrations, etc, without having to find all the 
 	 * print statements we might have left behind.
 	 * 
-	 * @param o -> Any object at all to be printed.
+	 * @param o - the object to print; usually a string.
 	 */
 	public static void say(Object o)
 	{
 		if(!isDebug)
 			return;
 		
-		Date date = new Date();
-		
+		Date date = new Date();	
 		String currentTime = dateFormat.format(date);
 		
 		System.out.println("[" + currentTime + "]" + o);
 	}
 	
 	
-	public static void error(Object o)
+	/**
+	 * Meant to be used for logging purposes; output from the networking
+	 * framework which should never be suppressed.  This output, like error,
+	 * will not be supressed when the debug flag is set to false.
+	 * 
+	 * @param o - the object to print; usually a string.
+	 */
+	public static void log(Object o)
 	{
-		if(!isDebug)
-			return;
+		Date date = new Date();	
+		String currentTime = dateFormat.format(date);
 		
-		Date date = new Date();
-		
+		//System.out.println("LOG [" + currentTime + "]" + o);
+	}
+	
+	
+	/**
+	 * Used only when an error has occured to notify the user of a serious
+	 * problem with their setup or the state of the network.  Not supressed
+	 * when the debug flag is turned off.
+	 * 
+	 * @param o - the object to print; usually a string.
+	 */
+	public static void error(Object o)
+	{		
+		Date date = new Date();	
 		String currentTime = dateFormat.format(date);
 		
 		System.err.println("[" + currentTime + "]" + o);
+	}
+	
+	
+	/**
+	 * Prints to standard error and then calls System.exit(1), assuming
+	 * that a fatal error has occurred and execution must halt.
+	 * 
+	 * @param o - the object to print; usually a string.
+	 */
+	public static void fatalError(Object o)
+	{		
+		Date date = new Date();	
+		String currentTime = dateFormat.format(date);
+		
+		System.err.println("[" + currentTime + "]" + o + " System will now exit.");
+		System.exit(1);
+	}
+	
+	
+	public static String getSiteLocalAddress()
+	{
+		String hostName = "Unknown";
+		
+		try 
+		{
+			InetAddress host = InetAddress.getLocalHost();			
+			hostName = host.getHostName();
+			InetAddress [] allAddys = InetAddress.getAllByName(hostName);
+			
+			for(InetAddress addy : allAddys)
+			{
+				if(addy.isSiteLocalAddress())
+				{
+					A.log("Using site-local address: " + addy.getHostAddress());
+					return addy.getHostAddress();
+				}
+			}
+		} 
+		catch (UnknownHostException e) 
+		{
+			A.error("Could not resolve a host to this machine.  No network components will work until this is resolved.");
+			//e.printStackTrace();
+		}
+		
+		A.error("Unable to discover a site-local address for host: " + hostName + ".  Returning a null address; no connection will be made.");
+		return null;
 	}
 	
 	

@@ -46,7 +46,7 @@ public class Distributor extends Portal implements Runnable
 			threadForMe.start();
 
 			
-			A.say("Distributor is running.");
+			A.log("Distributor is running.");
 		} 
 		catch (IOException e) 
 		{

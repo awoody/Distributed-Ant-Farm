@@ -10,7 +10,6 @@ public class Client extends Portal
 	public Client(Recipient recipient, iConstants constants) 
 	{
 		super(recipient, constants);
-		
 		this.connectToDistributor();
 	}
 }

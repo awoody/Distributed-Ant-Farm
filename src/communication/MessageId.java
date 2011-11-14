@@ -44,7 +44,7 @@ public class MessageId implements Serializable
 		
 	public String toString()
 	{
-		return "MessageId:" + originNode + " with creation time: " + creationTime + " and random seed: " + randomSeed + ".  The hash code is: " + this.hashCode();
+		return "MessageId:" + this.hashCode();
 	}
 
 	@Override

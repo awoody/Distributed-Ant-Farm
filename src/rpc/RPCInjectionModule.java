@@ -40,7 +40,7 @@ public class RPCInjectionModule extends AbstractModule
 		@Override
 		public Object invoke(MethodInvocation m) throws Throwable 
 		{
-			A.say("Intercepted a synchronous method call");
+			//A.say("Intercepted a synchronous method call");
 			AnnotatedObject callingObject = (AnnotatedObject) m.getThis();
 			//Create the invocation package for the message.
 			MessageId outgoingMessageId = portal.generateMessageId();

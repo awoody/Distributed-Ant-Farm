@@ -31,9 +31,7 @@ public class Server extends Portal implements Runnable
 			
 			this.connectToDistributor();
 			
-			String address = serverSocket.getInetAddress().getHostName();
-			A.say("Address is: " +  address);
-			distributor.registerNetworkResource(recipient.getResourceName(), portNumber, address, nodeId);
+			distributor.registerNetworkResource(recipient.getResourceName(), portNumber, A.getSiteLocalAddress(), nodeId);
 			
 			Thread threadForServer = new Thread(this);
 			threadForServer.start();
@@ -51,8 +49,7 @@ public class Server extends Portal implements Runnable
 	@Override
 	public void run() 
 	{
-
-		A.say("Server is running.");
+		A.log("Server is running.");
 		while (isRunning) 
 		{
 			Socket clientSocket;
@@ -64,16 +61,15 @@ public class Server extends Portal implements Runnable
 				// start a new thread for it and then send it
 				// the recipient's implementation of an initialization
 				// package.
-				A.say("Processing a server connection.");
+				A.log("Processing a server connection.");
 				NodeConnection newConnection = new NodeConnection(clientSocket);
 				Thread newClientThread = new Thread(newConnection);
 				newClientThread.start();
 				
 				//We need to get the nodeId and resource name from this new object so that we can properly set this up; this is done by creating
-				//invocation packages which are destined for the recipient of the new connection, which can service the response we need.  The
+				//resource packages which are destined for the recipient of the new connection, which can service the response we need.  The
 				//nodeId of the recipient is set by the portal which contains it, NOT by the user, so they don't have any knowledge of nodeId at
 				//all.
-				//TODO: This could all be done in one call with a custom package, but this is the quick and easy way to do it.
 				ResourceIdentificationPackage rip = new ResourceIdentificationPackage(nodeId, this.generateMessageId());
 				
 				Object [] response = (Object[]) newConnection.sendSynchronousPackage(rip);
