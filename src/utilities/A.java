@@ -29,6 +29,7 @@ import communication.NodeId;
 public class A 
 {
 	public final static boolean isDebug = false;
+	public static boolean surpressOutput;
 	private static DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SSSS");
 	private static Random randomSeed;
 	
@@ -36,6 +37,13 @@ public class A
 	{
 		randomSeed = new Random(System.currentTimeMillis());
 	}
+	
+	
+	public void supressOutput(boolean suppress)
+	{
+		surpressOutput = suppress;
+	}
+	
 	
 	/**
 	 * Centralized method that serves the same function as 
@@ -50,7 +58,7 @@ public class A
 	 */
 	public static void say(Object o)
 	{
-		if(!isDebug)
+		if(!isDebug || surpressOutput)
 			return;
 		
 		Date date = new Date();	
@@ -69,10 +77,13 @@ public class A
 	 */
 	public static void log(Object o)
 	{
+		if(surpressOutput)
+			return;
+		
 		Date date = new Date();	
 		String currentTime = dateFormat.format(date);
 		
-		//System.out.println("LOG [" + currentTime + "]" + o);
+		System.out.println("LOG [" + currentTime + "]" + o);
 	}
 	
 	

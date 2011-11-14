@@ -20,8 +20,8 @@ public abstract class AbstractPackage implements Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = -708002699640630109L;
-	protected NodeId sourceId;
-	protected MessageId messageId;
+	protected final NodeId sourceId;
+	protected final MessageId messageId;
 	
 	public AbstractPackage(NodeId id, MessageId messageId)
 	{

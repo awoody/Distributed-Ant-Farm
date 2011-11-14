@@ -247,7 +247,7 @@ public abstract class Portal implements iPortal
 			}
 		}
 		
-		
+				
 		@Override
 		public void run() 
 		{	
@@ -270,7 +270,9 @@ public abstract class Portal implements iPortal
 							//threaded off to a subclass capable of handling
 							//that sort of work.
 							PackageHandler ph = new PackageHandler(p);
-							threadPool.submit(ph);
+							
+							Thread t = new Thread(ph);
+							t.start();
 						}					
 						
 					}
@@ -388,7 +390,7 @@ public abstract class Portal implements iPortal
 			A.say("Sent a synchronous package from " + nodeId + " The package was: " + aPackage.toString());
 				
 				
-			SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread());
+			SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread(), aPackage, this);
 			outstandingSynchronousCalls.put(aPackage.messageId(), holder);
 			//System.out.println("Blocking this thread with key: " + aPackage.messageId());
 			holder.holdThread(); //This will cause execution to block here until the message returns.
@@ -398,9 +400,7 @@ public abstract class Portal implements iPortal
 			//from this RPC with our return value and continue on our merry way.
 			o = holder.getReturnValue();
 			//System.out.println("Thread was unblocked.");
-			
-			
-			
+				
 			return o;
 		}
 		
@@ -533,8 +533,14 @@ public abstract class Portal implements iPortal
 					//an earlier point; there is a thread waiting on it, so first set the 
 					//thread's holder's return value, and then resume the thread.
 					SynchronousCallHolder holder = outstandingSynchronousCalls.remove(response.messageId());
-					holder.setReturnValue(response.getReturnValue());
-					holder.continueThread();
+					
+					if(holder != null)
+					{	
+						holder.setReturnValue(response.getReturnValue());
+						holder.continueThread();
+					}
+					else
+						A.error("Something bizzare happened; there was a null holder for response package: " + response);
 				}
 			}
 		}

@@ -17,8 +17,6 @@ public class messageIdUniquenessTest
 		NodeId testId = new NodeId(4,4);
 		testMap = new HashMap<MessageId, String>();
 		
-		
-		
 		int outerBounds = 1000;
 		int testBounds = 100000;
 		boolean isFailed = false;
@@ -40,13 +38,17 @@ public class messageIdUniquenessTest
 				}
 			}
 			
+			if(!isFailed)
+				allTrials[j] = testBounds;
+			
+			isFailed = false;
 			testMap.clear();
 		}
 		
 		double average = A.average(allTrials);
 		double stdDev = A.standardDeviation(allTrials, average);
 		
-		A.say("The average time to failure is: " + average + " and the standard deviation is: " + stdDev);
+		System.out.println("The average time to failure is: " + average + " and the standard deviation is: " + stdDev);
 	}
 	
 	

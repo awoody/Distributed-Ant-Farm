@@ -28,15 +28,16 @@ public class MessageId implements Serializable
 	 */
 	private static final long serialVersionUID = -359008628621226490L;
 	private NodeId originNode;
-	private long creationTime;
-	private int randomSeed;
+	private static int currentStaticMessageId = 0;
+	private int messageIdNumber;
 	
 	public MessageId(NodeId originatingNode)
 	{
 		this.originNode = originatingNode;
+		this.messageIdNumber = currentStaticMessageId++;
 		
-		this.creationTime = System.currentTimeMillis();
-		this.randomSeed = A.randomIntFromZeroToBound(999999999);
+		if(currentStaticMessageId < 0)
+			currentStaticMessageId = 0;
 	}
 
 		
@@ -45,19 +46,22 @@ public class MessageId implements Serializable
 		return "MessageId:" + this.hashCode();
 	}
 
+
 	@Override
-	public int hashCode() {
+	public int hashCode()
+	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (creationTime ^ (creationTime >>> 32));
+		result = prime * result + messageIdNumber;
 		result = prime * result
 				+ ((originNode == null) ? 0 : originNode.hashCode());
-		result = prime * result + randomSeed;
 		return result;
 	}
 
+
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj)
+	{
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -65,16 +69,17 @@ public class MessageId implements Serializable
 		if (getClass() != obj.getClass())
 			return false;
 		MessageId other = (MessageId) obj;
-		if (creationTime != other.creationTime)
+		if (messageIdNumber != other.messageIdNumber)
 			return false;
 		if (originNode == null) {
 			if (other.originNode != null)
 				return false;
-		} else if (!originNode.equals(other.originNode))
-			return false;
-		if (randomSeed != other.randomSeed)
+		}
+		else if (!originNode.equals(other.originNode))
 			return false;
 		return true;
 	}
+
+	
 
 }

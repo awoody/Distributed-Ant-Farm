@@ -78,10 +78,7 @@ public class NodeId implements Serializable
 			return false;
 		if (parentNodeId != other.parentNodeId)
 			return false;
+		
 		return true;
 	}
-
-
-	
-	
 }

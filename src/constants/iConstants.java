@@ -1,11 +1,10 @@
 package constants;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import communication.NodeId;
 
-public interface iConstants extends Serializable
+public interface iConstants
 {
 	@SuppressWarnings("rawtypes")
 	public Map<String, Class> getAnnotatedObjectsByString();
