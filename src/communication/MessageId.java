@@ -22,13 +22,11 @@ import utilities.A;
  *
  */
 public class MessageId implements Serializable
-{
-
+{	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -2086564300338846077L;
-	
+	private static final long serialVersionUID = -359008628621226490L;
 	private NodeId originNode;
 	private long creationTime;
 	private int randomSeed;

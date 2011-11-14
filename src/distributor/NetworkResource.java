@@ -28,7 +28,7 @@ public class NetworkResource
 	{
 		int totalLocations = allLocationsThisResource.size() - 1;
 		
-		if(lastResourceAllocated >= totalLocations)
+		if(lastResourceAllocated > totalLocations)
 			lastResourceAllocated = 0;
 		
 		return allLocationsThisResource.get(lastResourceAllocated++);

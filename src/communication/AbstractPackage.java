@@ -15,7 +15,11 @@ import java.io.Serializable;
  */
 public abstract class AbstractPackage implements Serializable
 {
-	private static final long serialVersionUID = -8949599953951279490L;
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -708002699640630109L;
 	protected NodeId sourceId;
 	protected MessageId messageId;
 	

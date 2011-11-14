@@ -1,9 +1,11 @@
 package communication;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -262,94 +264,54 @@ public abstract class Portal implements iPortal
 						if((o = inputStream.readObject()) != null)
 						{
 							AbstractPackage p = (AbstractPackage) o;
-							A.log("Read " + p + " from input stream.");
 							
-							if(p instanceof ResourceIdentificationPackage)
-							{
-								ResourceIdentificationPackage rip = (ResourceIdentificationPackage) p;
-								
-								if(rip.isReturningToSender())
-								{
-									SynchronousCallHolder holder = outstandingSynchronousCalls.remove(rip.messageId());
-									
-									Object [] response = {rip.getResourceNodeId(), rip.getResourceObjectName()};
-									
-									holder.setReturnValue(response);
-									holder.continueThread();
-								}
-								else
-								{
-									rip.setResourceNodeId(getNodeId());
-									rip.setResourceObjectName(recipient.getResourceName());
-									
-									rip.flip();
-									this.sendAsynchronousPackage(rip);
-								}
-							}							
-							else if(p instanceof InitializationPackage)
-							{								
-								nodeId = ((InitializationPackage) p).getIdForNewNode();
-								
-								if(recipient != null)
-									recipient.setNodeId(nodeId);
-								
-								//A.log("Node Connection received init package.  Setting nodeId to " + nodeId);
-							}														
-							else if(p instanceof InvocationPackage)
-							{
-								
-								InvocationPackage ip = (InvocationPackage) p;
-								//A.log("Recived an invocation package " + ip);
-								
-								//Thread all of the invocation packages off so that 
-								//the user methods that invoke them are able to make
-								//synchronous RPC from within their methods.  Otherwise,
-								//deadlock would result as this listener thread got deadlocked
-								//waiting for input to come in.
-								RunnableInvocation ri = new RunnableInvocation(ip);
-								threadPool.submit(ri);
-							}
-							else if(p instanceof ResponsePackage)
-							{
-								//A.log("Received a response package.");
-								ResponsePackage response = (ResponsePackage) p;
-								
-								//This package must contain a response to something which was sent out at
-								//an earlier point; there is a thread waiting on it, so first set the 
-								//thread's holder's return value, and then resume the thread.
-								SynchronousCallHolder holder = outstandingSynchronousCalls.remove(response.messageId());
-								holder.setReturnValue(response.getReturnValue());
-								holder.continueThread();
-							}
-							
-						}
-						
+							//We want to keep the listener thread active as 
+							//often as possible; so all package handling is
+							//threaded off to a subclass capable of handling
+							//that sort of work.
+							PackageHandler ph = new PackageHandler(p);
+							threadPool.submit(ph);
+						}					
 						
 					}
 					catch (ClassNotFoundException e) 
 					{
+						e.printStackTrace();
 						A.fatalError("Unknown class sent over the object input stream.");
 					}
 
 				} 
+				catch(EOFException e)
+				{
+					closeConnection();
+					A.fatalError("Shutting down; unexpected EOF.");
+				}
+				catch(SocketException e)
+				{
+					closeConnection();
+					A.fatalError("Shutting down due to socket exception: " + e.getMessage());
+				}
 				catch(IOException e)
 				{
 					e.printStackTrace();
-					A.error("IO Exception was thrown for this socket; socket will be closed.");
+					closeConnection();
+					A.fatalError("IO Exception was thrown for this socket; socket will be closed.");
 					isOpen = false;
 				}
 			}
 			
-			try {
-				outputStream.close();
-				inputStream.close();
-				s.close();
-			}
-			catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
+//			try 
+//			{
+//				outputStream.close();
+//				inputStream.close();
+//				s.close();
+//			}
+//			catch (IOException e) 
+//			{
+//				e.printStackTrace();
+//			}
 		}
+		
 		
 		public void resetNodeConnection(int newPort)
 		{
@@ -391,41 +353,76 @@ public abstract class Portal implements iPortal
 			return nodeId;
 		}
 		
+		
+		public boolean canSend()
+		{
+			if(nodeId == null) 
+			{
+				A.error("Cannot send packages without valid nodeId");
+				return false;
+			}
+			
+			if(!isOpen)
+			{
+				A.error("Cannot send packages via a closed socket.");
+				return false;
+			}
+			
+			return true;
+		}
+		
 				
 		public Object sendSynchronousPackage(AbstractPackage aPackage)
 		{
 			//Without a node id, you can only receive.
 			//If you aren't open, however, you can't do anything.
-			if(nodeId == null || !isOpen) 
+			if(!canSend())
 			{
-				A.say("Cannot send packages without valid nodeId");
+				A.error("This node was unable to send package: " + aPackage);
 				return null;
 			}
 			
 			Object o = null;
-			try 
-			{
-				outputStream.writeObject(aPackage);
-				A.say("Sent a synchronous package from " + nodeId + " The package was: " + aPackage.toString());
+			
+			writeToOutputStream(aPackage);
+			A.say("Sent a synchronous package from " + nodeId + " The package was: " + aPackage.toString());
 				
 				
-				SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread());
-				outstandingSynchronousCalls.put(aPackage.messageId(), holder);
-				//System.out.println("Blocking this thread with key: " + aPackage.messageId());
-				holder.holdThread(); //This will cause execution to block here until the message returns.
+			SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread());
+			outstandingSynchronousCalls.put(aPackage.messageId(), holder);
+			//System.out.println("Blocking this thread with key: " + aPackage.messageId());
+			holder.holdThread(); //This will cause execution to block here until the message returns.
 				
-				//When execution gets to here, it means the holder's return value has been set by the listener
-				//thread and the thread which was trapped here has been resumed.  Good times.  We can return
-				//from this RPC with our return value and continue on our merry way.
-				o = holder.getReturnValue();
-				//System.out.println("Thread was unblocked.");
-			} 
-			catch (IOException e) 
-			{
-				A.fatalError("Unable to send the requested object from a Node Connection");
-			}
+			//When execution gets to here, it means the holder's return value has been set by the listener
+			//thread and the thread which was trapped here has been resumed.  Good times.  We can return
+			//from this RPC with our return value and continue on our merry way.
+			o = holder.getReturnValue();
+			//System.out.println("Thread was unblocked.");
+			
+			
 			
 			return o;
+		}
+		
+		
+		/**
+		 * I think multiple threads might have been grabbing this stream 
+		 * at the server and sending fucking crazy shit over it, resulting
+		 * in wild exceptions at the client and all kinds of chaos.
+		 * 
+		 * @param o
+		 */
+		public synchronized void writeToOutputStream(Object o)
+		{
+			try 
+			{
+				outputStream.writeObject(o);
+			}
+			catch (IOException e)
+			{
+				A.fatalError("Unable to send the requested object from a Node Connection");
+				//e.printStackTrace();
+			}
 		}
 		
 		
@@ -433,21 +430,13 @@ public abstract class Portal implements iPortal
 		{
 			//Without a node id, you can only receive.
 			//If you aren't open, however, you can't do anything.
-			if(nodeId == null || !isOpen) 
+			if(!canSend())
 			{
-				A.say("Cannot send packages without valid nodeId");
+				A.error("This node was unable to send package: " + aPackage);
 				return;
 			}
 			
-			try 
-			{
-				outputStream.writeObject(aPackage);
-				A.say("Sent am asynchronous package from " + nodeId + " The package was: " + aPackage.toString());
-			} 
-			catch (IOException e) 
-			{
-				A.fatalError("Unable to send the requested object from a Node Connection");
-			}
+			writeToOutputStream(aPackage);
 		}
 		
 		
@@ -455,6 +444,9 @@ public abstract class Portal implements iPortal
 		{
 			try 
 			{
+				inputStream.close();
+				outputStream.close();
+				
 				s.close();
 			} 
 			catch (IOException e) 
@@ -468,32 +460,81 @@ public abstract class Portal implements iPortal
 			
 		}
 		
-		private class RunnableInvocation implements Runnable
+		private class PackageHandler implements Runnable
 		{
-			private InvocationPackage ip;
+			private AbstractPackage ap;
 			
-			public RunnableInvocation(InvocationPackage ip)
+			public PackageHandler(AbstractPackage ap)
 			{
-				this.ip = ip;
+				this.ap = ap;
 			}
 
 			@Override
 			public void run() 
 			{
-				if(ip.isSynchronous())
+				if(ap instanceof ResourceIdentificationPackage)
 				{
-					Object returnValue = recipient.invokeMethod(ip.getMethodName(), ip.getArguments());
+					ResourceIdentificationPackage rip = (ResourceIdentificationPackage) ap;
 					
-					//Create a response package with the same message id since there is a thread waiting on
-					//this return value on the other side.
-					ResponsePackage responsePackage = new ResponsePackage(nodeId, ip.getMessageId(), returnValue);
+					if(rip.isReturningToSender())
+					{
+						SynchronousCallHolder holder = outstandingSynchronousCalls.remove(rip.messageId());
+						
+						Object [] response = {rip.getResourceNodeId(), rip.getResourceObjectName()};
+						
+						holder.setReturnValue(response);
+						holder.continueThread();
+					}
+					else
+					{
+						rip.setResourceNodeId(getNodeId());
+						rip.setResourceObjectName(recipient.getResourceName());
+						
+						rip.flip();
+						sendAsynchronousPackage(rip);
+					}
+				}							
+				else if(ap instanceof InitializationPackage)
+				{								
+					nodeId = ((InitializationPackage) ap).getIdForNewNode();
 					
-					//Dispatch the package back where it came from.
-					sendAsynchronousPackage(responsePackage);;
+					if(recipient != null)
+						recipient.setNodeId(nodeId);
+					
+					//A.log("Node Connection received init package.  Setting nodeId to " + nodeId);
+				}														
+				else if(ap instanceof InvocationPackage)
+				{
+					
+					InvocationPackage ip = (InvocationPackage) ap;
+					
+					if(ip.isSynchronous())
+					{
+						Object returnValue = recipient.invokeMethod(ip.getMethodName(), ip.getArguments());
+						
+						//Create a response package with the same message id since there is a thread waiting on
+						//this return value on the other side.
+						ResponsePackage responsePackage = new ResponsePackage(nodeId, ip.getMessageId(), returnValue);
+						
+						//Dispatch the package back where it came from.
+						sendAsynchronousPackage(responsePackage);;
+					}
+					else
+					{
+						recipient.invokeMethod(ip.getMethodName(), ip.getArguments());
+					}
 				}
-				else
+				else if(ap instanceof ResponsePackage)
 				{
-					recipient.invokeMethod(ip.getMethodName(), ip.getArguments());
+					//A.log("Received a response package.");
+					ResponsePackage response = (ResponsePackage) ap;
+					
+					//This package must contain a response to something which was sent out at
+					//an earlier point; there is a thread waiting on it, so first set the 
+					//thread's holder's return value, and then resume the thread.
+					SynchronousCallHolder holder = outstandingSynchronousCalls.remove(response.messageId());
+					holder.setReturnValue(response.getReturnValue());
+					holder.continueThread();
 				}
 			}
 		}
