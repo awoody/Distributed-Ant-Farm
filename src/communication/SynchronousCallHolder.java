@@ -51,54 +51,44 @@ public class SynchronousCallHolder
 	public void holdThread()
 	{
 		//System.out.println("Holding Thread: " + heldThread);
-		isSuspended = true;
-		heldThread.suspend();
-		return;
-		
-//		long currentTime = System.currentTimeMillis();
-//		boolean recoveryAttempted = false;
+//		isSuspended = true;
+//		heldThread.suspend();
+//		return;
 //		
-//		while(true)
-//		{
-//			try 
-//			{
-//				Thread.sleep(sleepTime);
-//			}
-//			catch (InterruptedException e) 
-//			{
-//				if(heldThread == null)
-//					break;
-//			}
-//					
-//			if(!isSuspended)
-//				break;
-//			
-//			
-//			if(recoveryAttempted)
-//			{
-//				A.fatalError("A thread was not resumed after too long.");
-//			}
-//			
-//			long latestTime = System.currentTimeMillis();
-//			
-//			if(latestTime - currentTime > timeout)
-//			{
-//				recoveryAttempted = true;
-//				A.error("Thread deadlock detected.");
-//				A.error("The package was: " + p.toString());
-//				A.error("Attempting recovery by resending package.");
-//				nc.writeToOutputStream(p);
-//			}
-//		}
+		boolean recoveryAttempted = false;
+		
+		while(true)
+		{
+			try 
+			{
+				Thread.sleep(timeout);
+			}
+			catch (InterruptedException e) 
+			{
+				break;
+			}
+						
+			if(recoveryAttempted)
+			{
+				A.fatalError("A thread was not resumed after too long.");
+			}
+			
+			recoveryAttempted = true;
+			A.error("Thread deadlock detected.");
+			A.error("The package was: " + p.toString());
+			A.error("Attempting recovery by resending package.");
+			nc.writeToOutputStream(p);
+		}
 	}
 	
 	@SuppressWarnings("deprecation")
 	public void continueThread()
 	{
 		//System.out.println("Resuming Thread: " + heldThread);
-		isSuspended = false;
-		heldThread.resume(); //Should break it out of sleeping if it is.
+		//isSuspended = false;
 		//heldThread = null;
+		heldThread.interrupt(); //Should break it out of sleeping if it is.
+		
 	}
 
 	public Object getReturnValue()

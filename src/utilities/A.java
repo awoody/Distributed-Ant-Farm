@@ -28,7 +28,7 @@ import communication.NodeId;
  */
 public class A 
 {
-	public final static boolean isDebug = false;
+	public final static boolean isDebug = true;
 	public static boolean surpressOutput;
 	private static DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SSSS");
 	private static Random randomSeed;
@@ -44,6 +44,29 @@ public class A
 		surpressOutput = suppress;
 	}
 	
+	
+	public static void printObjectArray(Object [][] blocks)
+	{
+		
+			int iS = blocks.length;
+			int jS = blocks[0].length;
+			
+			System.out.println("#################");
+												  
+			for(int i=0; i < iS; i++)
+			{
+				for(int j=0; j < jS; j++)
+				{
+					Object b = blocks[i][j];
+					System.out.print(b.toString());
+				}
+				
+				System.out.println();
+			}
+			
+			System.out.println("#################");
+		
+	}
 	
 	/**
 	 * Centralized method that serves the same function as 

@@ -2,8 +2,10 @@ package communication;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -52,12 +54,12 @@ import distributor.iDistributor;
 public abstract class Portal implements iPortal
 {
 	protected NodeId nodeId;
-	protected Map<NodeId, NodeConnection> allConnections;
-	protected Injector injector;
+	protected final Map<NodeId, NodeConnection> allConnections;
+	protected final Injector injector;
 	protected Recipient recipient;
 	protected DistributorInterface distributor;
-	protected iConstants constants;
-	protected ExecutorService threadPool;
+	protected final iConstants constants;
+	protected final ExecutorService threadPool;
 	
 	public Portal(Recipient r, iConstants constants)
 	{
@@ -235,17 +237,15 @@ public abstract class Portal implements iPortal
 			outstandingSynchronousCalls = new ConcurrentHashMap<MessageId, SynchronousCallHolder>();
 			
 			//Establish input and output streams over the socket.
-			try 
-			{
-				outputStream = new ObjectOutputStream(s.getOutputStream());
-				inputStream = new ObjectInputStream(s.getInputStream());
+//			try 
+//			{
 				isOpen = true;
 				
-			} 
-			catch (IOException e) 
-			{
-				A.fatalError("Warning, the requested client connection was not properly initialized!");				
-			}
+//			} 
+//			catch (IOException e) 
+//			{
+//				A.fatalError("Warning, the requested client connection was not properly initialized!");				
+//			}
 		}
 		
 				
@@ -259,31 +259,30 @@ public abstract class Portal implements iPortal
 			{	
 				try 
 				{
+					inputStream = new ObjectInputStream(s.getInputStream());
+					
 					Object o;
-					try 
+					if((o = inputStream.readObject()) != null)
 					{
-						if((o = inputStream.readObject()) != null)
-						{
-							AbstractPackage p = (AbstractPackage) o;
+						AbstractPackage p = (AbstractPackage) o;
 							
-							//We want to keep the listener thread active as 
-							//often as possible; so all package handling is
-							//threaded off to a subclass capable of handling
-							//that sort of work.
-							PackageHandler ph = new PackageHandler(p);
+						A.say("Read package: " + p.toString());
 							
-							Thread t = new Thread(ph);
-							t.start();
-						}					
-						
-					}
-					catch (ClassNotFoundException e) 
-					{
-						e.printStackTrace();
-						A.fatalError("Unknown class sent over the object input stream.");
-					}
+						//We want to keep the listener thread active as 
+						//often as possible; so all package handling is
+						//threaded off to a subclass capable of handling
+						//that sort of work.
+						PackageHandler ph = new PackageHandler(p);
+							
+						threadPool.submit(ph);
+					}					
 
 				} 
+				catch (ClassNotFoundException e) 
+				{
+					e.printStackTrace();
+					A.fatalError("Unknown class sent over the object input stream.");
+				}
 				catch(EOFException e)
 				{
 					closeConnection();
@@ -302,17 +301,6 @@ public abstract class Portal implements iPortal
 					isOpen = false;
 				}
 			}
-			
-//			try 
-//			{
-//				outputStream.close();
-//				inputStream.close();
-//				s.close();
-//			}
-//			catch (IOException e) 
-//			{
-//				e.printStackTrace();
-//			}
 		}
 		
 		
@@ -420,8 +408,11 @@ public abstract class Portal implements iPortal
 		 */
 		public synchronized void writeToOutputStream(Object o)
 		{
+			
+			
 			try 
 			{
+				outputStream = new ObjectOutputStream(s.getOutputStream());
 				outputStream.writeObject(o);
 			}
 			catch (IOException e)

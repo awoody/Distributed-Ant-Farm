@@ -43,7 +43,7 @@ public class MessageId implements Serializable
 		
 	public String toString()
 	{
-		return "MessageId:" + this.hashCode();
+		return "MessageId:" + messageIdNumber;
 	}
 
 

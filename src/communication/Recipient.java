@@ -71,7 +71,7 @@ public abstract class Recipient
 	public Object invokeMethod(String methodName, Object[] arguments)
 	{
 		Method methodForDelegate = methodMap.get(methodName);
-		
+				
 		Object o = null;
 		try 
 		{

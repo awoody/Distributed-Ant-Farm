@@ -6,20 +6,20 @@ import utilities.A;
 
 public class InvocationPackage extends AbstractPackage
 {
+	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 3620789372542250320L;
+	private static final long serialVersionUID = 8520186103919851502L;
 	private String methodName;
-	private Object [] arguments;
+	private final Object [] arguments;
 	private boolean isSynchronous;
 	
 	public InvocationPackage(NodeId nodeId, MessageId messageId, String methodName, MessageType type, Object [] arguments)
 	{
 		super(nodeId, messageId);
-		// TODO Auto-generated constructor stub
-		
-		if(arguments!= null)
+	
+		if(arguments != null)
 		{	
 			for(Object o : arguments)
 			{
@@ -66,7 +66,39 @@ public class InvocationPackage extends AbstractPackage
 	@Override
 	public String toString()
 	{
-		return "Synchronous: " + isSynchronous + " Method invocation package from: " + sourceId + " for method: " + methodName;	
+		String firstPart = "Synchronous: " + isSynchronous + " Method invocation package " + messageId + " from: " + sourceId + " for method: " + methodName + "\n with arguments: " + arguments;	
+		
+		
+		
+		for(Object o : arguments)
+		{
+			if(o instanceof Object[][])
+			{
+				Object[][] arr = (Object[][]) o;
+				
+				int sI = arr.length;
+				int sJ = arr[0].length;
+				
+				for(int i=0; i< sI; i++)
+				{
+					firstPart += "\n";
+					
+					for(int j=0; j<sJ; j++)
+					{
+						firstPart += arr[i][j].toString();
+					}
+				}
+			}
+			else
+			{
+				firstPart += "\n" + o.toString();
+			}
+			
+		}
+		
+		firstPart += "\n*********************";
+		
+		return firstPart;
 	}
 
 }

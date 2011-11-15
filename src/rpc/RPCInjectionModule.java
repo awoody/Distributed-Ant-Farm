@@ -2,6 +2,8 @@ package rpc;
 
 
 
+
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
@@ -59,9 +61,11 @@ public class RPCInjectionModule extends AbstractModule
 			//Create the invocation package for the message.
 			MessageId outgoingMessageId = portal.generateMessageId();
 			InvocationPackage ip = new InvocationPackage(portal.getNodeId(), outgoingMessageId, m.getMethod().getName(), MessageType.ASYNCHRONOUS, m.getArguments());
-			
+						
 			portal.dispatchAsynchronousPackage(ip, callingObject.getNodeId());
 			return m.proceed();
 		}
 	}
+	
+	
 }
