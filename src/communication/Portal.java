@@ -9,6 +9,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -231,7 +232,7 @@ public abstract class Portal implements iPortal
 		public NodeConnection(Socket s)
 		{
 			this.s = s;		
-			outstandingSynchronousCalls = new HashMap<MessageId, SynchronousCallHolder>();
+			outstandingSynchronousCalls = new ConcurrentHashMap<MessageId, SynchronousCallHolder>();
 			
 			//Establish input and output streams over the socket.
 			try 
@@ -391,7 +392,10 @@ public abstract class Portal implements iPortal
 				
 				
 			SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread(), aPackage, this);
+			
+			
 			outstandingSynchronousCalls.put(aPackage.messageId(), holder);
+			
 			//System.out.println("Blocking this thread with key: " + aPackage.messageId());
 			holder.holdThread(); //This will cause execution to block here until the message returns.
 				
@@ -400,7 +404,9 @@ public abstract class Portal implements iPortal
 			//from this RPC with our return value and continue on our merry way.
 			o = holder.getReturnValue();
 			//System.out.println("Thread was unblocked.");
-				
+			
+			
+			
 			return o;
 		}
 		
@@ -478,12 +484,13 @@ public abstract class Portal implements iPortal
 					
 					if(rip.isReturningToSender())
 					{
+						
 						SynchronousCallHolder holder = outstandingSynchronousCalls.remove(rip.messageId());
-						
 						Object [] response = {rip.getResourceNodeId(), rip.getResourceObjectName()};
-						
+							
 						holder.setReturnValue(response);
 						holder.continueThread();
+								
 					}
 					else
 					{
@@ -532,6 +539,7 @@ public abstract class Portal implements iPortal
 					//This package must contain a response to something which was sent out at
 					//an earlier point; there is a thread waiting on it, so first set the 
 					//thread's holder's return value, and then resume the thread.
+							
 					SynchronousCallHolder holder = outstandingSynchronousCalls.remove(response.messageId());
 					
 					if(holder != null)
@@ -540,7 +548,7 @@ public abstract class Portal implements iPortal
 						holder.continueThread();
 					}
 					else
-						A.error("Something bizzare happened; there was a null holder for response package: " + response);
+						A.error("Something bizzare happened; there was a null holder for response package: " + response.getReturnValue());
 				}
 			}
 		}

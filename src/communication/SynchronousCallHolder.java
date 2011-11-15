@@ -98,7 +98,7 @@ public class SynchronousCallHolder
 		//System.out.println("Resuming Thread: " + heldThread);
 		isSuspended = false;
 		heldThread.resume(); //Should break it out of sleeping if it is.
-		heldThread = null;
+		//heldThread = null;
 	}
 
 	public Object getReturnValue()

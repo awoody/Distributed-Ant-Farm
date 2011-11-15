@@ -27,10 +27,18 @@ public abstract class AnnotatedObject
 {
 	protected NodeId nodeId;
 		
+	
+	/**
+	 * Returns the nodeId used by the network
+	 * architecture to identify this node.
+	 * 
+	 * @return
+	 */
 	public NodeId getNodeId()
 	{
 		return nodeId;
 	}
+	
 	
 	public void setNodeId(NodeId i)
 	{
