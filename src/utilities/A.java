@@ -28,7 +28,7 @@ import communication.NodeId;
  */
 public class A 
 {
-	public final static boolean isDebug = true;
+	public final static boolean isDebug = false;
 	public static boolean surpressOutput;
 	private static DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SSSS");
 	private static Random randomSeed;

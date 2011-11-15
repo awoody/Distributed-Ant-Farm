@@ -226,8 +226,6 @@ public abstract class Portal implements iPortal
 	{
 		private Socket s;
 		private boolean isOpen;
-		private ObjectInputStream inputStream;
-		private ObjectOutputStream outputStream;
 		private final Map<MessageId, SynchronousCallHolder> outstandingSynchronousCalls;
 		
 		
@@ -237,15 +235,10 @@ public abstract class Portal implements iPortal
 			outstandingSynchronousCalls = new ConcurrentHashMap<MessageId, SynchronousCallHolder>();
 			
 			//Establish input and output streams over the socket.
-//			try 
-//			{
-				isOpen = true;
-				
-//			} 
-//			catch (IOException e) 
-//			{
-//				A.fatalError("Warning, the requested client connection was not properly initialized!");				
-//			}
+	
+
+			isOpen = true;
+
 		}
 		
 				
@@ -259,7 +252,8 @@ public abstract class Portal implements iPortal
 			{	
 				try 
 				{
-					inputStream = new ObjectInputStream(s.getInputStream());
+
+					ObjectInputStream inputStream = new ObjectInputStream(s.getInputStream());
 					
 					Object o;
 					if((o = inputStream.readObject()) != null)
@@ -275,8 +269,9 @@ public abstract class Portal implements iPortal
 						PackageHandler ph = new PackageHandler(p);
 							
 						threadPool.submit(ph);
-					}					
-
+					}			
+					
+					//inputStream.close();
 				} 
 				catch (ClassNotFoundException e) 
 				{
@@ -303,41 +298,41 @@ public abstract class Portal implements iPortal
 			}
 		}
 		
-		
-		public void resetNodeConnection(int newPort)
-		{
-			isOpen = false; //close the connection.
-
-			
-			try 
-			{
-				outputStream.close();
-				inputStream.close();
-				s.close();
-			}
-			catch (IOException e1) 
-			{
-				
-			}
-			
-						
-			try 
-			{
-				A.say("Will attempt to open new connection to: " + newPort);
-				s = new Socket("localhost", newPort);	
-				outputStream = new ObjectOutputStream(s.getOutputStream());
-				inputStream = new ObjectInputStream(s.getInputStream());
-				isOpen = true;
-			} 
-			catch (IOException e) 
-			{
-				A.say("Warning, failed to properly reset the nodeConnection.  Socket is not open.");
-				isOpen = false;
-				e.printStackTrace();
-			}
-			
-		}
-		
+//		
+//		public void resetNodeConnection(int newPort)
+//		{
+//			isOpen = false; //close the connection.
+//
+//			
+//			try 
+//			{
+//				outputStream.close();
+//				inputStream.close();
+//				s.close();
+//			}
+//			catch (IOException e1) 
+//			{
+//				
+//			}
+//			
+//						
+//			try 
+//			{
+//				A.say("Will attempt to open new connection to: " + newPort);
+//				s = new Socket("localhost", newPort);	
+//				outputStream = new SaltyBitch(s.getOutputStream());
+//				inputStream = new ObjectInputStream(s.getInputStream());
+//				isOpen = true;
+//			} 
+//			catch (IOException e) 
+//			{
+//				A.say("Warning, failed to properly reset the nodeConnection.  Socket is not open.");
+//				isOpen = false;
+//				e.printStackTrace();
+//			}
+//			
+//		}
+//		
 		
 		public NodeId getNodeId()
 		{
@@ -412,7 +407,7 @@ public abstract class Portal implements iPortal
 			
 			try 
 			{
-				outputStream = new ObjectOutputStream(s.getOutputStream());
+				ObjectOutputStream outputStream = new ObjectOutputStream(s.getOutputStream());
 				outputStream.writeObject(o);
 			}
 			catch (IOException e)
@@ -440,10 +435,7 @@ public abstract class Portal implements iPortal
 		public void closeConnection()
 		{
 			try 
-			{
-				inputStream.close();
-				outputStream.close();
-				
+			{				
 				s.close();
 			} 
 			catch (IOException e) 
