@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import monitor.Graph;
+
 import rpc.AnnotatedObject;
 import utilities.A;
 
@@ -45,6 +47,13 @@ public class Server extends Portal implements Runnable
 		// TODO Auto-generated constructor stub
 	}
 
+	
+	public Graph getNetworkGraph()
+	{
+		return distributor.getObjectGraph();
+	}
+	
+	
 
 	@Override
 	public void run() 

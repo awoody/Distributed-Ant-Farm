@@ -1,18 +1,15 @@
 package communication;
 
-import communication.Portal.NodeConnection;
-
 import utilities.A;
+
+import communication.Portal.NodeConnection;
 
 public class SynchronousCallHolder
 {
 	private Thread heldThread;
 	public static Thread socketListenerThread;
 	private static long timeout = 5000;
-	private static long sleepTime = 100;
 	private Object returnValue;
-	private boolean isSuspended;
-	private boolean debug;
 	private AbstractPackage p;
 	private NodeConnection nc;
 	
@@ -40,21 +37,14 @@ public class SynchronousCallHolder
 			A.fatalError("Attempted to suspend the socket listener thread.  This is not permitted.");
 		}
 	
-		debug = true;
 		this.p = p;
 		this.nc = c;
 		this.heldThread = heldThread;
 	}
 	
 	
-	@SuppressWarnings("deprecation")
 	public void holdThread()
-	{
-		//System.out.println("Holding Thread: " + heldThread);
-//		isSuspended = true;
-//		heldThread.suspend();
-//		return;
-//		
+	{	
 		boolean recoveryAttempted = false;
 		
 		while(true)
@@ -65,10 +55,13 @@ public class SynchronousCallHolder
 			}
 			catch (InterruptedException e) 
 			{
-				break;
+				break; //thread was interrupted by continueThread(), this is a good thing.
 			}
 						
-			if(recoveryAttempted)
+			//Thread not interrupted; we have waited too long; attempt recovery but only 
+			//once
+			
+			if(recoveryAttempted) //recovery already attempted, crash the system.
 			{
 				A.fatalError("A thread was not resumed after too long.");
 			}
@@ -81,14 +74,9 @@ public class SynchronousCallHolder
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void continueThread()
 	{
-		//System.out.println("Resuming Thread: " + heldThread);
-		//isSuspended = false;
-		//heldThread = null;
-		heldThread.interrupt(); //Should break it out of sleeping if it is.
-		
+		heldThread.interrupt(); //Should break it out of sleeping if it is.	
 	}
 
 	public Object getReturnValue()

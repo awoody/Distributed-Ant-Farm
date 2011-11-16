@@ -1,5 +1,6 @@
 package client;
 
+import monitor.Graph;
 import communication.Portal;
 import communication.Recipient;
 
@@ -11,5 +12,10 @@ public class Client extends Portal
 	{
 		super(recipient, constants);
 		this.connectToDistributor();
+	}
+	
+	public Graph getNetworkGraph()
+	{
+		return distributor.getObjectGraph();
 	}
 }

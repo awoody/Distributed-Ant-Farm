@@ -2,8 +2,6 @@ package communication;
 
 import java.io.Serializable;
 
-import utilities.A;
-
 /**
  * Uniquely Identifies a specific message.
  * Across 1000 trials of 100000 independent

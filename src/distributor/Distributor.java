@@ -61,6 +61,13 @@ public class Distributor extends Portal implements Runnable
 		}	
 	}
 	
+	
+	public Graph getNetworkGraph()
+	{
+		return null;
+	}
+	
+	
 	public void run() 
 	{		
 		Socket clientSocket;

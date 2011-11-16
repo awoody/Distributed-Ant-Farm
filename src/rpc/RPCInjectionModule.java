@@ -7,21 +7,18 @@ package rpc;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
-import utilities.A;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
-
 import communication.InvocationPackage;
 import communication.MessageId;
 import communication.MessageType;
-import communication.iPortal;
+import communication.Portal;
 
 public class RPCInjectionModule extends AbstractModule
 {
-	private iPortal portal;
+	private Portal portal;
 	
-	public RPCInjectionModule(iPortal portal)
+	public RPCInjectionModule(Portal portal)
 	{
 		this.portal = portal;
 	}

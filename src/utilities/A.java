@@ -79,6 +79,7 @@ public class A
 	 * 
 	 * @param o - the object to print; usually a string.
 	 */
+	@SuppressWarnings("unused")
 	public static void say(Object o)
 	{
 		if(!isDebug || surpressOutput)
