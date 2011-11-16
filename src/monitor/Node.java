@@ -1,6 +1,7 @@
 package monitor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import communication.NodeId;
@@ -12,7 +13,7 @@ public class Node implements Serializable
 	 */
 	private static final long serialVersionUID = -708954300495449217L;
 	private NodeId id;
-	private List<Node> edges;
+	private List<Node> edges = new ArrayList<Node>();
 	private iNodeStatus status;
 	
 	public Node(NodeId id)

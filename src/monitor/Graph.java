@@ -1,6 +1,8 @@
 package monitor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +16,8 @@ public class Graph implements Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = 5293390993631660455L;
-	private List<Node> allNodes;
-	private Map<NodeId, Node> nodeMap;
+	private List<Node> allNodes = new ArrayList<Node>();
+	private Map<NodeId, Node> nodeMap = new HashMap<NodeId, Node>();
 	private Node distributor;
 	private Node rootNode; //Traversal iterators always start here.
 	
