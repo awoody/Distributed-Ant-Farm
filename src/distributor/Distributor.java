@@ -5,6 +5,9 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import monitor.Graph;
+import monitor.Node;
+
 import rpc.AnnotatedObject;
 import utilities.A;
 
@@ -24,6 +27,7 @@ public class Distributor extends Portal implements Runnable
 	private boolean isRunning;
 	private static int nextNodeId = 1;
 	private Map<String, NetworkResource> resourcesByName;
+	private Graph nodeGraph;
 	
 	public Distributor(iConstants constants)
 	{
@@ -31,10 +35,13 @@ public class Distributor extends Portal implements Runnable
 		
 		try 
 		{
+			nodeGraph = new Graph();
+			
 			serverSocket = new ServerSocket(constants.getDefaultDistributorPort());
 			resourcesByName = new HashMap<String, NetworkResource>();
 			nodeId = constants.getDistributorNodeId();
 			isRunning = true;
+			nodeGraph.setDistributor(new Node(nodeId));
 	
 			//Kind of a hack but this is the only case where the recipient
 			//is the object itself and not a user-provided object.
@@ -74,6 +81,7 @@ public class Distributor extends Portal implements Runnable
 				
 				this.allConnections.put(ip.getIdForNewNode(), newConnection);
 				newConnection.sendAsynchronousPackage(ip);
+				nodeGraph.addNode(ip.idForNewNode);
 				
 				A.say("Distributor accepted a new connection and assigned nodeId: " + ip.idForNewNode);
 			}
@@ -116,7 +124,7 @@ public class Distributor extends Portal implements Runnable
 	public class DistributorRecipient extends Recipient implements iDistributor
 	{
 		@Override
-		public NetworkLocation networkLocationForString(String objectName)
+		public NetworkLocation connectionToResourceForNode(NodeId requestingNode, String objectName)
 		{
 			if(objectName == null)
 				A.error("A null object name was given");
@@ -134,15 +142,13 @@ public class Distributor extends Portal implements Runnable
 			if(returnValue == null)
 				A.error("There are no location for the resource.  This indicates somethign odd has happened: " + objectName);
 			
+			//Adds a bi-directional edge between the two nodes since the socket that will
+			//be created goes both ways.
+			nodeGraph.addEdge(requestingNode, returnValue.getNodeId());
+			nodeGraph.addEdge(returnValue.getNodeId(), requestingNode);
 			return returnValue;
 		}
 
-		@Override
-		public String returnTestString()
-		{
-			System.out.println("Creating test string");
-			return "Distributor test string!! Holy crap, it's alive.";
-		}
 		
 		public void registerNetworkResource(String resourceName, int port, String address, NodeId id)
 		{
@@ -174,6 +180,13 @@ public class Distributor extends Portal implements Runnable
 		public String getResourceName() 
 		{
 			return null;
+		}
+
+
+		@Override
+		public Graph getObjectGraph()
+		{
+			return nodeGraph;
 		}
 	}
 }

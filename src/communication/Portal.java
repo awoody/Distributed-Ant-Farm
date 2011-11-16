@@ -130,7 +130,7 @@ public abstract class Portal implements iPortal
 	@Override
 	public AnnotatedObject makeNewConnection(String annotatedObjectName) 
 	{
-		NetworkLocation objectLocation = distributor.networkLocationForString(annotatedObjectName);
+		NetworkLocation objectLocation = distributor.connectionToResourceForNode(nodeId, annotatedObjectName);
 		
 		try 
 		{

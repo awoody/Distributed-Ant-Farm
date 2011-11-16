@@ -1,14 +1,20 @@
 package distributor;
 
+import monitor.Graph;
 import communication.NodeId;
 
 import distributor.NetworkResource.NetworkLocation;
 
 public interface iDistributor 
 {
-	public NetworkLocation networkLocationForString(String objectName);
+	public NetworkLocation connectionToResourceForNode(NodeId requestingNode, String objectName);
 	
 	public void registerNetworkResource(String resourceName, int port, String address, NodeId idOfResource);
 	
-	public String returnTestString();
+	/**
+	 * Returns the most current copy of the network's object graph complete
+	 * with update information for all of the nodes in the graph.
+	 * @return 
+	 */
+	public Graph getObjectGraph();
 }

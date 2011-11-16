@@ -1,5 +1,6 @@
 package distributor;
 
+import monitor.Graph;
 import communication.NodeId;
 import communication.NodeType;
 import distributor.NetworkResource.NetworkLocation;
@@ -17,24 +18,8 @@ public class DistributorInterface extends AnnotatedObject implements iDistributo
 	
 	
 	@Synchronous
-	public NetworkResource obtainObjectFromString(String objectName)
+	public NetworkLocation connectionToResourceForNode(NodeId requestingNode, String objectName)
 	{
-		return null;
-	}
-
-
-	@Synchronous
-	public String returnTestString() 
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Synchronous
-	public NetworkLocation networkLocationForString(String objectName) 
-	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -42,6 +27,15 @@ public class DistributorInterface extends AnnotatedObject implements iDistributo
 	@Synchronous
 	public void registerNetworkResource(String resourceName, int port,
 			String address, NodeId idOfResource) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Synchronous
+	public Graph getObjectGraph()
+	{
+		return null;
 		// TODO Auto-generated method stub
 		
 	}
