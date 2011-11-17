@@ -1,5 +1,6 @@
 package communication;
 
+import packages.AbstractPackage;
 import utilities.A;
 
 import communication.Portal.NodeConnection;

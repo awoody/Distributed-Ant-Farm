@@ -1,6 +1,8 @@
-package communication;
+package packages;
 
 import java.io.Serializable;
+
+import communication.NodeId;
 
 /**
  * Baseline class for all packages; meant to be overridden

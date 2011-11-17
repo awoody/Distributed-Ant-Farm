@@ -7,11 +7,11 @@ package rpc;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import packages.InvocationPackage;
+import packages.MessageId;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
-import communication.InvocationPackage;
-import communication.MessageId;
-import communication.MessageType;
 import communication.Portal;
 
 public class RPCInjectionModule extends AbstractModule

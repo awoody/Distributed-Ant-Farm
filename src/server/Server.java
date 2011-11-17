@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import packages.ResourceIdentificationPackage;
+
 import monitor.Graph;
 
 import rpc.AnnotatedObject;
@@ -12,7 +14,6 @@ import utilities.A;
 import communication.NodeId;
 import communication.Portal;
 import communication.Recipient;
-import communication.ResourceIdentificationPackage;
 
 import constants.iConstants;
 

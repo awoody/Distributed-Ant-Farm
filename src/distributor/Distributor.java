@@ -5,14 +5,15 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import packages.AbstractPackage;
+import packages.InitializationPackage;
+
 import monitor.Graph;
 import monitor.Node;
 
 import rpc.AnnotatedObject;
 import utilities.A;
 
-import communication.AbstractPackage;
-import communication.InitializationPackage;
 import communication.NodeId;
 import communication.Portal;
 import communication.Recipient;
@@ -193,7 +194,18 @@ public class Distributor extends Portal implements Runnable
 		@Override
 		public Graph getObjectGraph()
 		{
+			for(NodeId id : allConnections.keySet())
+			{
+				NodeConnection c = allConnections.get(id);
+				
+				
+			}
+			
+			
+			
 			return nodeGraph;
 		}
 	}
+	
+
 }

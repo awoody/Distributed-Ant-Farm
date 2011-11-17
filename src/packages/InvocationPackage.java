@@ -1,6 +1,10 @@
-package communication;
+package packages;
 
 import java.io.Serializable;
+
+import rpc.MessageType;
+
+import communication.NodeId;
 
 import utilities.A;
 

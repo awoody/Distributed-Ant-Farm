@@ -3,9 +3,10 @@ package unitTests;
 import java.util.HashMap;
 import java.util.Map;
 
+import packages.MessageId;
+
 import utilities.A;
 
-import communication.MessageId;
 import communication.NodeId;
 
 public class messageIdUniquenessTest 

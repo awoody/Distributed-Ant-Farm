@@ -1,4 +1,6 @@
-package communication;
+package packages;
+
+import communication.NodeId;
 
 public class ResourceIdentificationPackage extends AbstractPackage
 {

@@ -168,7 +168,7 @@
       <operations public="true" package="true" protected="true" private="true"/>    
     </display>  
   </class>  
-  <class id="23" corner="BOTTOM_RIGHT" language="java" name="communication.AbstractPackage" project="os.8.29" 
+  <class id="23" corner="BOTTOM_RIGHT" language="java" name="packages.AbstractPackage" project="os.8.29" 
     file="/os.8.29/src/communication/AbstractPackage.java" binary="false">    
     <position height="-1" width="-1" x="1092" y="254"/>    
     <display autosize="true" package="true" initial-value="false" signature="true" visibility="true">      
