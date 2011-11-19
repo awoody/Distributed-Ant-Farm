@@ -17,4 +17,8 @@ public interface iDistributor
 	 * @return 
 	 */
 	public Graph getObjectGraph();
+	
+	public void addEdgeFromAtoB(NodeId start, NodeId end);
+	
+	public void removeEdgeFromAtoB(NodeId start, NodeId end);
 }

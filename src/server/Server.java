@@ -72,7 +72,19 @@ public class Server extends Portal implements Runnable
 		return distributor.getObjectGraph();
 	}
 	
-	
+	@Override
+	public void shutdown()
+	{
+		super.shutdown();
+		try 
+		{
+			serverSocket.close();
+		}
+		catch (IOException e) 
+		{
+			
+		}
+	}
 
 	@Override
 	public void run() 

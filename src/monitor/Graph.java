@@ -81,6 +81,21 @@ public class Graph implements Serializable
 		A.addConnection(B);
 	}
 	
+	
+	public void removeEdge(NodeId a, NodeId b)
+	{
+		if(!nodeMap.containsKey(a))
+			A.fatalError("Adding an edge with a non-existent node.  Add the node first.");
+		
+		if(!nodeMap.containsKey(b))
+			A.fatalError("Adding an edge with a non-existent node.  Add the node first.");
+		
+		Node A = nodeMap.get(a);
+		Node B = nodeMap.get(b);
+		
+		A.removeConnectio(B);
+	}
+	
 //	public Iterator<Node> getDFSIterator()
 //	{
 //		return null;

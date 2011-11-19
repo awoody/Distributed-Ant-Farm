@@ -5,6 +5,7 @@ import communication.NodeId;
 import distributor.NetworkResource.NetworkLocation;
 
 import rpc.AnnotatedObject;
+import rpc.Asynchronous;
 import rpc.Synchronous;
 
 public class DistributorInterface extends AnnotatedObject implements iDistributor
@@ -28,6 +29,22 @@ public class DistributorInterface extends AnnotatedObject implements iDistributo
 	public Graph getObjectGraph()
 	{
 		return null;
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Asynchronous
+	public void addEdgeFromAtoB(NodeId start, NodeId end)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Asynchronous
+	public void removeEdgeFromAtoB(NodeId start, NodeId end)
+	{
 		// TODO Auto-generated method stub
 		
 	}

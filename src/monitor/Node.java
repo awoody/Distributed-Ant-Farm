@@ -36,6 +36,13 @@ public class Node implements Serializable
 		edges.add(n);
 	}
 	
+	
+	public void removeConnectio(Node n)
+	{
+		edges.remove(n);
+	}
+	
+	
 	public List<Node> getEdges()
 	{
 		return edges;

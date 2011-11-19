@@ -62,7 +62,7 @@ public abstract class Portal implements iPortal
 	protected final Map<NodeId, NodeConnection> allConnections;
 	protected final Injector injector;
 	protected Recipient recipient;
-	protected DistributorInterface distributor;
+	protected iDistributor distributor;
 	protected final iConstants constants;
 	protected final ExecutorService threadPool;
 	
@@ -109,7 +109,7 @@ public abstract class Portal implements iPortal
 			Thread distributorThread = new Thread(distributorConnection);
 			distributorThread.start();
 			
-			NodeId distributorNodeId = constants.getDistributorNodeId();
+			NodeId distributorNodeId = iConstants.defaultDistributorNodeId;
 			allConnections.put(distributorNodeId, distributorConnection);
 			
 			distributor = injector.getInstance(DistributorInterface.class);
@@ -211,6 +211,25 @@ public abstract class Portal implements iPortal
 	}
 	
 	
+	public void closeConnection(AnnotatedObject objToClose)
+	{
+		NodeId idToClose = objToClose.getNodeId();
+		
+		NodeConnection c = allConnections.remove(idToClose);
+		c.closeConnection();
+		distributor.removeEdgeFromAtoB(nodeId, idToClose);
+	}
+	
+	
+	public void shutdown()
+	{
+		for(NodeId id : allConnections.keySet())
+		{
+			allConnections.get(id).closeConnection();
+		}
+	}
+	
+	
 	/**
 	 * Sets the nodeId of this portal.
 	 * 
@@ -236,15 +255,13 @@ public abstract class Portal implements iPortal
 	}
 	
 	
-	
-	
-	
 	public class NodeConnection implements Runnable
 	{
 		private Socket s;
 		private boolean isOpen;
 		private final Map<MessageId, SynchronousCallHolder> outstandingSynchronousCalls;
-		
+		private ObjectInputStream inputStream;
+		private ObjectOutputStream outputStream;
 		
 		public NodeConnection(Socket s)
 		{
@@ -252,10 +269,19 @@ public abstract class Portal implements iPortal
 			outstandingSynchronousCalls = new ConcurrentHashMap<MessageId, SynchronousCallHolder>();
 			
 			//Establish input and output streams over the socket.
-	
+			try 
+			{
+				//Order matters here.
+				outputStream = new ObjectOutputStream(s.getOutputStream());
+				inputStream = new ObjectInputStream(s.getInputStream());		
+			}
+			catch (IOException e) 
+			{
+				handleError(e, "Couldn't establish input and output streams.");
+			}
+			
 
 			isOpen = true;
-
 		}
 		
 				
@@ -268,10 +294,7 @@ public abstract class Portal implements iPortal
 			while(isOpen)
 			{	
 				try 
-				{
-
-					ObjectInputStream inputStream = new ObjectInputStream(s.getInputStream());
-					
+				{	
 					Object o;
 					if((o = inputStream.readObject()) != null)
 					{
@@ -287,33 +310,46 @@ public abstract class Portal implements iPortal
 							
 						threadPool.submit(ph);
 					}			
-					
-					//inputStream.close();
 				} 
 				catch (ClassNotFoundException e) 
 				{
 					e.printStackTrace();
-					A.fatalError("Unknown class sent over the object input stream.");
+					A.error("Unknown class sent over the object input stream.");
 				}
 				catch(EOFException e)
 				{
 					closeConnection();
-					A.fatalError("Shutting down; unexpected EOF.");
+					handleError(e, "Shutting down; unexpected EOF.");
 				}
 				catch(SocketException e)
 				{
 					closeConnection();
-					A.fatalError("Shutting down due to socket exception: " + e.getMessage());
+					handleError(e, "Socket was unexpectedly closed due to socket exception");
 				}
 				catch(IOException e)
 				{
 					e.printStackTrace();
 					closeConnection();
-					A.fatalError("IO Exception was thrown for this socket; socket will be closed.");
+					handleError(e, "IO Exception was thrown for this socket; socket will be closed.");
 					isOpen = false;
 				}
 			}
 		}
+		
+		
+		public void handleError(Exception e, String message)
+		{
+			if(constants.shutdownOnSocketError())
+			{
+				e.printStackTrace();
+				A.fatalError(message);
+			}
+			else
+			{
+				A.error(message);
+			}
+		}
+		
 		
 //		
 //		public void resetNodeConnection(int newPort)
@@ -420,12 +456,13 @@ public abstract class Portal implements iPortal
 		{	
 			try 
 			{
-				ObjectOutputStream outputStream = new ObjectOutputStream(s.getOutputStream());
+				
 				outputStream.writeObject(o);
+				outputStream.reset();
 			}
 			catch (IOException e)
 			{
-				A.fatalError("Unable to send the requested object from a Node Connection");
+				handleError(e, "Unable to send the requested object from a Node Connection");
 				//e.printStackTrace();
 			}
 		}
@@ -448,7 +485,9 @@ public abstract class Portal implements iPortal
 		public void closeConnection()
 		{
 			try 
-			{				
+			{		
+				inputStream.close();
+				outputStream.close();
 				s.close();
 			} 
 			catch (IOException e) 

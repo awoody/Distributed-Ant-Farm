@@ -46,7 +46,8 @@ public class Distributor extends Portal implements Runnable
 			serverSocket = new ServerSocket(constants.getDefaultDistributorPort());
 			resourcesByName = new ConcurrentHashMap<String, NetworkResource>();
 			updateRequestThreadPool = Executors.newCachedThreadPool();
-			nodeId = constants.getDistributorNodeId();
+			
+			nodeId = iConstants.defaultDistributorNodeId;
 			isRunning = true;
 			nodeGraph.setDistributor(new Node(nodeId));
 			nodeGraph.addNode(nodeId);
@@ -140,6 +141,21 @@ public class Distributor extends Portal implements Runnable
 		return nodeId;
 	}
 
+	
+	@Override
+	public void shutdown()
+	{
+		super.shutdown();
+		try 
+		{
+			serverSocket.close();
+		}
+		catch (IOException e) 
+		{
+			
+		}
+	}
+	
 
 	@Override
 	public void dispatchAsynchronousPackage(AbstractPackage aPackage,
@@ -264,6 +280,22 @@ public class Distributor extends Portal implements Runnable
 			
 			
 			return nodeGraph;
+		}
+
+
+		@Override
+		public void addEdgeFromAtoB(NodeId start, NodeId end)
+		{
+			nodeGraph.addEdge(start, end);
+			nodeGraph.addEdge(end, start);
+		}
+
+
+		@Override
+		public void removeEdgeFromAtoB(NodeId start, NodeId end)
+		{
+			nodeGraph.removeEdge(start, end);
+			nodeGraph.removeEdge(end, start);	
 		}
 		
 		
