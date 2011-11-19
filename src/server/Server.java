@@ -16,10 +16,12 @@ import communication.Portal;
 import communication.Recipient;
 
 import constants.iConstants;
+import distributor.NetworkResource.NetworkLocation;
 
 public class Server extends Portal implements Runnable
 {
 	private ServerSocket serverSocket;
+	private int portNumber;
 	
 	boolean isRunning = true;
 	
@@ -31,6 +33,7 @@ public class Server extends Portal implements Runnable
 		{
 			serverSocket = new ServerSocket(portNumber);
 			isRunning = true;
+			this.portNumber = portNumber;
 			
 			this.connectToDistributor();
 			
@@ -48,6 +51,21 @@ public class Server extends Portal implements Runnable
 		// TODO Auto-generated constructor stub
 	}
 
+	
+	@Override
+	public NetworkLocation getNetworkLocation()
+	{
+		// TODO Auto-generated method stub
+		return new NetworkLocation(portNumber, A.getSiteLocalAddress(), nodeId);
+	}
+
+
+	@Override
+	public boolean isServer()
+	{
+		return true;
+	}
+	
 	
 	public Graph getNetworkGraph()
 	{
@@ -106,5 +124,4 @@ public class Server extends Portal implements Runnable
 		}
 
 	}
-
 }

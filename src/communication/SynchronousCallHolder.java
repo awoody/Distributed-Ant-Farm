@@ -9,7 +9,7 @@ public class SynchronousCallHolder
 {
 	private Thread heldThread;
 	public static Thread socketListenerThread;
-	private static long timeout = 5000;
+	private static long timeout = 10000;
 	private Object returnValue;
 	private AbstractPackage p;
 	private NodeConnection nc;
@@ -18,17 +18,6 @@ public class SynchronousCallHolder
 	{
 		socketListenerThread = t;
 	}
-	
-//	public SynchronousCallHolder(Thread heldThread)
-//	{
-//		if(heldThread == socketListenerThread)
-//		{
-//			A.fatalError("Attempted to suspend the socket listener thread.  This is not permitted.");
-//		}
-//		
-//		debug = false;
-//		this.heldThread = heldThread;
-//	}
 	
 	
 	public SynchronousCallHolder(Thread heldThread, AbstractPackage p, NodeConnection c)
@@ -48,6 +37,12 @@ public class SynchronousCallHolder
 	{	
 		boolean recoveryAttempted = false;
 		
+		//The value has already been set before the call
+		//to holdThread even occurred; don't even enter
+		//this loop.
+		if(returnValue != null)
+			return;
+		
 		while(true)
 		{
 			try 
@@ -59,6 +54,9 @@ public class SynchronousCallHolder
 				break; //thread was interrupted by continueThread(), this is a good thing.
 			}
 						
+			if(returnValue != null)
+				return;
+			
 			//Thread not interrupted; we have waited too long; attempt recovery but only 
 			//once
 			
@@ -68,7 +66,7 @@ public class SynchronousCallHolder
 			}
 			
 			recoveryAttempted = true;
-			A.error("Thread deadlock detected.");
+			A.error("Thread timeout exceeded.");
 			A.error("The package was: " + p.toString());
 			A.error("Attempting recovery by resending package.");
 			nc.writeToOutputStream(p);

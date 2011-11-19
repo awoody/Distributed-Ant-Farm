@@ -2,21 +2,13 @@ package distributor;
 
 import monitor.Graph;
 import communication.NodeId;
-import communication.NodeType;
 import distributor.NetworkResource.NetworkLocation;
 
 import rpc.AnnotatedObject;
 import rpc.Synchronous;
 
 public class DistributorInterface extends AnnotatedObject implements iDistributor
-{	
-	@Synchronous
-	public NodeId registerNewObject(String objectName, NodeType nodeType)
-	{
-		return null;
-	}
-	
-	
+{		
 	@Synchronous
 	public NetworkLocation connectionToResourceForNode(NodeId requestingNode, String objectName)
 	{

@@ -2,15 +2,17 @@ package distributor;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
-
-import packages.AbstractPackage;
-import packages.InitializationPackage;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import monitor.Graph;
 import monitor.Node;
-
+import monitor.iNodeStatus;
+import packages.AbstractPackage;
+import packages.InitializationPackage;
+import packages.ResourceUpdatePackage;
 import rpc.AnnotatedObject;
 import utilities.A;
 
@@ -28,7 +30,10 @@ public class Distributor extends Portal implements Runnable
 	private boolean isRunning;
 	private static int nextNodeId = 1;
 	private Map<String, NetworkResource> resourcesByName;
+	private ExecutorService updateRequestThreadPool;
 	private Graph nodeGraph;
+//	private int updateRequestsDispatched = 0;
+//	private int updateRequestsReceived = 0;
 	
 	public Distributor(iConstants constants)
 	{
@@ -39,10 +44,12 @@ public class Distributor extends Portal implements Runnable
 			nodeGraph = new Graph();
 			
 			serverSocket = new ServerSocket(constants.getDefaultDistributorPort());
-			resourcesByName = new HashMap<String, NetworkResource>();
+			resourcesByName = new ConcurrentHashMap<String, NetworkResource>();
+			updateRequestThreadPool = Executors.newCachedThreadPool();
 			nodeId = constants.getDistributorNodeId();
 			isRunning = true;
 			nodeGraph.setDistributor(new Node(nodeId));
+			nodeGraph.addNode(nodeId);
 	
 			//Kind of a hack but this is the only case where the recipient
 			//is the object itself and not a user-provided object.
@@ -60,6 +67,22 @@ public class Distributor extends Portal implements Runnable
 		{
 			e.printStackTrace();
 		}	
+	}
+	
+	
+	@Override
+	public NetworkLocation getNetworkLocation()
+	{
+		// TODO Auto-generated method stub
+		return new NetworkLocation(constants.getDefaultDistributorPort(), A.getSiteLocalAddress(), nodeId);
+	}
+
+
+	@Override
+	public boolean isServer()
+	{
+		// TODO Auto-generated method stub
+		return true;
 	}
 	
 	
@@ -89,9 +112,14 @@ public class Distributor extends Portal implements Runnable
 				
 				this.allConnections.put(ip.getIdForNewNode(), newConnection);
 				newConnection.sendAsynchronousPackage(ip);
-				nodeGraph.addNode(ip.idForNewNode);
 				
-				A.say("Distributor accepted a new connection and assigned nodeId: " + ip.idForNewNode);
+				//Add the new node and then add its edges between the distributor
+				//and the new node.
+				nodeGraph.addNode(ip.idForNewNode);
+				nodeGraph.addEdge(nodeId, ip.getIdForNewNode());
+				nodeGraph.addEdge(ip.getIdForNewNode(), nodeId);
+				
+				A.log("Distributor accepted a new connection and assigned nodeId: " + ip.idForNewNode);
 			}
 		}
 		catch (IOException e) 
@@ -194,18 +222,71 @@ public class Distributor extends Portal implements Runnable
 		@Override
 		public Graph getObjectGraph()
 		{
+			
+			//This is threaded off using a cached thread pool
+			//because it was too laggy doing this in a loop;
+			//the requesting thread was blocking for longer
+			//than the allowed timeout time as a result just
+			//waiting for this IO to complete.
 			for(NodeId id : allConnections.keySet())
 			{
-				NodeConnection c = allConnections.get(id);
 				
-				
+				UpdateRequestDispatcher urd = new UpdateRequestDispatcher(id);
+				updateRequestThreadPool.submit(urd);
+				//updateRequestsDispatched++;
 			}
+			
+			//Little trick to handle the fact that the last update requests threaded
+			//off to the pool might not ever return in time to get returned in this
+			//call; the updates to the graph would wind up being always one cycle
+			//behind on the later nodes.  So, simply count the received and sent
+			//requests and spin until they're equal.
+//			while(true)
+//			{
+//				if(updateRequestsReceived == updateRequestsDispatched)
+//				{
+//					updateRequestsReceived = 0;
+//					updateRequestsDispatched = 0;
+//					
+//					break;
+//				}
+//				
+//				try 
+//				{
+//					Thread.sleep(10);
+//				}
+//				catch (InterruptedException e) 
+//				{
+//					e.printStackTrace();
+//				}
+//			}
 			
 			
 			
 			return nodeGraph;
 		}
+		
+		
 	}
 	
-
+	private class UpdateRequestDispatcher implements Runnable
+	{
+		private final NodeId id;
+		
+		public UpdateRequestDispatcher(NodeId id)
+		{
+			this.id = id;
+		}
+		
+		@Override
+		public void run()
+		{
+			NodeConnection c = allConnections.get(id);		
+			ResourceUpdatePackage up = new ResourceUpdatePackage(nodeId, generateMessageId());
+			iNodeStatus status = (iNodeStatus) c.sendSynchronousPackage(up);
+			//updateRequestsReceived++;
+			nodeGraph.getNodeMap().get(id).setNodeStatus(status);
+		}
+		
+	}
 }

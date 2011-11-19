@@ -7,19 +7,19 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import monitor.iNodeStatus;
 import packages.AbstractPackage;
 import packages.InitializationPackage;
 import packages.InvocationPackage;
 import packages.MessageId;
 import packages.ResourceIdentificationPackage;
+import packages.ResourceUpdatePackage;
 import packages.ResponsePackage;
-
 import rpc.AnnotatedObject;
 import rpc.RPCInjectionModule;
 import utilities.A;
@@ -70,7 +70,7 @@ public abstract class Portal implements iPortal
 	{
 		this.recipient = r;
 		this.constants = constants;
-		allConnections = new HashMap<NodeId, NodeConnection>();
+		allConnections = new ConcurrentHashMap<NodeId, NodeConnection>();
 		injector = Guice.createInjector(new RPCInjectionModule(this));
 		threadPool = Executors.newCachedThreadPool();		
 		//if(getClass(). instanceof Distributor)
@@ -133,10 +133,16 @@ public abstract class Portal implements iPortal
 	
 	
 	@Override
-	public AnnotatedObject makeNewConnection(String annotatedObjectName) 
+	public AnnotatedObject makeNewConnectionToResource(String resourceName) 
 	{
-		NetworkLocation objectLocation = distributor.connectionToResourceForNode(nodeId, annotatedObjectName);
+		NetworkLocation objectLocation = distributor.connectionToResourceForNode(nodeId, resourceName);
 		
+		return newConnectionToLocation(objectLocation, resourceName);
+	}
+		
+	
+	public AnnotatedObject newConnectionToLocation(NetworkLocation objectLocation, String resourceName)
+	{
 		try 
 		{
 			Socket connection = new Socket(objectLocation.getAddress(), objectLocation.getPortNumber());
@@ -149,7 +155,7 @@ public abstract class Portal implements iPortal
 			allConnections.put(objectLocation.getNodeId(), newConnection);
 			
 			@SuppressWarnings("unchecked")
-			AnnotatedObject object = injector.getInstance(constants.getAnnotatedObjectsByString().get(annotatedObjectName));
+			AnnotatedObject object = injector.getInstance(constants.getAnnotatedObjectsByString().get(resourceName));
 			object.setNodeId(objectLocation.getNodeId());
 			
 			return object;		
@@ -165,7 +171,8 @@ public abstract class Portal implements iPortal
 		
 		return null;
 	}
-		
+	
+	
 	public iDistributor distributorConnection()
 	{
 		if(distributor == null)
@@ -174,6 +181,12 @@ public abstract class Portal implements iPortal
 		}
 		
 		return distributor;
+	}
+	
+	
+	public iNodeStatus getNodeStatus()
+	{
+		return null;
 	}
 	
 	
@@ -219,7 +232,7 @@ public abstract class Portal implements iPortal
 	
 	public MessageId generateMessageId()
 	{
-		return new MessageId(nodeId);
+		return new MessageId(nodeId);	
 	}
 	
 	
@@ -374,14 +387,13 @@ public abstract class Portal implements iPortal
 			
 			Object o = null;
 			
-			writeToOutputStream(aPackage);
-			A.say("Sent a synchronous package from " + nodeId + " The package was: " + aPackage.toString());
-				
-				
+			//Ordering is absolutely essential here; on a fast machine if you write the stream before 
+			//adding the call to the map, it can be null when it comes around.  This is symptomatic
+			//of ALL fast networks in general; therefore I am careful here to make sure that this
+			//never occurs.
 			SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread(), aPackage, this);
-			
-			
 			outstandingSynchronousCalls.put(aPackage.messageId(), holder);
+			writeToOutputStream(aPackage);
 			
 			//System.out.println("Blocking this thread with key: " + aPackage.messageId());
 			holder.holdThread(); //This will cause execution to block here until the message returns.
@@ -390,9 +402,8 @@ public abstract class Portal implements iPortal
 			//thread and the thread which was trapped here has been resumed.  Good times.  We can return
 			//from this RPC with our return value and continue on our merry way.
 			o = holder.getReturnValue();
-			//System.out.println("Thread was unblocked.");
-			
-			
+
+			//outstandingSynchronousCalls.remove(holder);
 			
 			return o;
 		}
@@ -406,9 +417,7 @@ public abstract class Portal implements iPortal
 		 * @param o
 		 */
 		public synchronized void writeToOutputStream(Object o)
-		{
-			
-			
+		{	
 			try 
 			{
 				ObjectOutputStream outputStream = new ObjectOutputStream(s.getOutputStream());
@@ -464,40 +473,8 @@ public abstract class Portal implements iPortal
 
 			@Override
 			public void run() 
-			{
-				if(ap instanceof ResourceIdentificationPackage)
-				{
-					ResourceIdentificationPackage rip = (ResourceIdentificationPackage) ap;
-					
-					if(rip.isReturningToSender())
-					{
-						
-						SynchronousCallHolder holder = outstandingSynchronousCalls.remove(rip.messageId());
-						Object [] response = {rip.getResourceNodeId(), rip.getResourceObjectName()};
-							
-						holder.setReturnValue(response);
-						holder.continueThread();
-								
-					}
-					else
-					{
-						rip.setResourceNodeId(getNodeId());
-						rip.setResourceObjectName(recipient.getResourceName());
-						
-						rip.flip();
-						sendAsynchronousPackage(rip);
-					}
-				}							
-				else if(ap instanceof InitializationPackage)
-				{								
-					nodeId = ((InitializationPackage) ap).getIdForNewNode();
-					
-					if(recipient != null)
-						recipient.setNodeId(nodeId);
-					
-					//A.log("Node Connection received init package.  Setting nodeId to " + nodeId);
-				}														
-				else if(ap instanceof InvocationPackage)
+			{														
+				if(ap instanceof InvocationPackage)
 				{
 					
 					InvocationPackage ip = (InvocationPackage) ap;
@@ -535,9 +512,82 @@ public abstract class Portal implements iPortal
 						holder.continueThread();
 					}
 					else
-						A.error("Something bizzare happened; there was a null holder for response package: " + response.getReturnValue());
+						A.error("Something bizzare happened; there was a null holder for response package: " + response);
+				}
+				else if(ap instanceof ResourceUpdatePackage)
+				{
+					ResourceUpdatePackage rip = (ResourceUpdatePackage) ap;
+					
+					if(rip.isReturningToSender())
+					{
+						SynchronousCallHolder holder = outstandingSynchronousCalls.remove(rip.messageId());
+						Object response = rip.getNodeStatus();
+						holder.setReturnValue(response);
+						holder.continueThread();						
+					}
+					else
+					{
+						rip.setNodeStatus(getNodeStatus());
+						rip.flip();
+						sendAsynchronousPackage(rip);
+					}
+				}
+				else if(ap instanceof ResourceIdentificationPackage)
+				{
+					ResourceIdentificationPackage rip = (ResourceIdentificationPackage) ap;
+					
+					if(rip.isReturningToSender())
+					{
+						SynchronousCallHolder holder = outstandingSynchronousCalls.remove(rip.messageId());
+						Object [] response = {rip.getResourceNodeId(), rip.getResourceObjectName()};
+							
+						holder.setReturnValue(response);
+						holder.continueThread();		
+					}
+					else
+					{
+						rip.setResourceNodeId(getNodeId());
+						rip.setResourceObjectName(recipient.getResourceName());
+						
+						rip.flip();
+						sendAsynchronousPackage(rip);
+					}
+				}							
+				else if(ap instanceof InitializationPackage)
+				{								
+					nodeId = ((InitializationPackage) ap).getIdForNewNode();
+					
+					if(recipient != null)
+						recipient.setNodeId(nodeId);
 				}
 			}
+		}
+		
+	}
+	
+	@SuppressWarnings("unused")
+	private class PortalMonitor implements iNodeStatus
+	{
+
+		@Override
+		public double getAverageLatency()
+		{
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int totalConnectedNodes()
+		{
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public double getPackagesPerSecond()
+		{
+			// TODO Auto-generated method stub
+			return 0;
 		}
 		
 	}

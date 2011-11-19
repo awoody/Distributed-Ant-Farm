@@ -70,37 +70,7 @@ public class InvocationPackage extends AbstractPackage
 	@Override
 	public String toString()
 	{
-		String firstPart = "Synchronous: " + isSynchronous + " Method invocation package " + messageId + " from: " + sourceId + " for method: " + methodName + "\n with arguments: " + arguments;	
-		
-		
-		
-		for(Object o : arguments)
-		{
-			if(o instanceof Object[][])
-			{
-				Object[][] arr = (Object[][]) o;
-				
-				int sI = arr.length;
-				int sJ = arr[0].length;
-				
-				for(int i=0; i< sI; i++)
-				{
-					firstPart += "\n";
-					
-					for(int j=0; j<sJ; j++)
-					{
-						firstPart += arr[i][j].toString();
-					}
-				}
-			}
-			else
-			{
-				firstPart += "\n" + o.toString();
-			}
-			
-		}
-		
-		firstPart += "\n*********************";
+		String firstPart = "Synchronous: " + isSynchronous + " Method invocation package " + messageId + " from: " + sourceId + " for method: " + methodName;	
 		
 		return firstPart;
 	}
