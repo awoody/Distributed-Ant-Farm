@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import packages.ResourceIdentificationPackage;
-
 import monitor.Graph;
-
+import monitor.NodeType;
+import packages.ResourceIdentificationPackage;
 import rpc.AnnotatedObject;
 import utilities.A;
 
@@ -38,6 +37,7 @@ public class Server extends Portal implements Runnable
 			this.connectToDistributor();
 			
 			distributor.registerNetworkResource(recipient.getResourceName(), portNumber, A.getSiteLocalAddress(), nodeId);
+			monitor.setNodeType(getNodeType());
 			
 			Thread threadForServer = new Thread(this);
 			threadForServer.start();
@@ -135,5 +135,13 @@ public class Server extends Portal implements Runnable
 			}
 		}
 
+	}
+
+
+	@Override
+	public NodeType getNodeType()
+	{
+		// TODO Auto-generated method stub
+		return NodeType.SERVER;
 	}
 }

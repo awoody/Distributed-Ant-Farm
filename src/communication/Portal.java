@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import monitor.NodeType;
 import monitor.iNodeStatus;
 import packages.AbstractPackage;
 import packages.InitializationPackage;
@@ -65,6 +66,7 @@ public abstract class Portal implements iPortal
 	protected iDistributor distributor;
 	protected final iConstants constants;
 	protected final ExecutorService threadPool;
+	protected final PortalMonitor monitor;
 	
 	public Portal(Recipient r, iConstants constants)
 	{
@@ -73,6 +75,7 @@ public abstract class Portal implements iPortal
 		allConnections = new ConcurrentHashMap<NodeId, NodeConnection>();
 		injector = Guice.createInjector(new RPCInjectionModule(this));
 		threadPool = Executors.newCachedThreadPool();		
+		monitor = new PortalMonitor();
 		//if(getClass(). instanceof Distributor)
 	}
 	
@@ -95,6 +98,9 @@ public abstract class Portal implements iPortal
 			}
 		}
 	}
+	
+	
+	public abstract NodeType getNodeType();
 	
 	
 	protected void connectToDistributor()
@@ -183,13 +189,7 @@ public abstract class Portal implements iPortal
 		return distributor;
 	}
 	
-	
-	public iNodeStatus getNodeStatus()
-	{
-		return null;
-	}
-	
-	
+		
 	public void dispatchAsynchronousPackage(AbstractPackage aPackage,
 			NodeId recipient)
 	{
@@ -427,7 +427,7 @@ public abstract class Portal implements iPortal
 			//adding the call to the map, it can be null when it comes around.  This is symptomatic
 			//of ALL fast networks in general; therefore I am careful here to make sure that this
 			//never occurs.
-			SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread(), aPackage, this);
+			SynchronousCallHolder holder = new SynchronousCallHolder(Thread.currentThread(), aPackage, this, monitor);
 			outstandingSynchronousCalls.put(aPackage.messageId(), holder);
 			writeToOutputStream(aPackage);
 			
@@ -455,10 +455,10 @@ public abstract class Portal implements iPortal
 		public synchronized void writeToOutputStream(Object o)
 		{	
 			try 
-			{
-				
+			{				
 				outputStream.writeObject(o);
 				outputStream.reset();
+				monitor.packageSent();
 			}
 			catch (IOException e)
 			{
@@ -566,7 +566,8 @@ public abstract class Portal implements iPortal
 					}
 					else
 					{
-						rip.setNodeStatus(getNodeStatus());
+						monitor.setTotalConnections(allConnections.size());
+						rip.setNodeStatus(monitor.buildStatusAndReset());
 						rip.flip();
 						sendAsynchronousPackage(rip);
 					}
@@ -603,32 +604,4 @@ public abstract class Portal implements iPortal
 		}
 		
 	}
-	
-	@SuppressWarnings("unused")
-	private class PortalMonitor implements iNodeStatus
-	{
-
-		@Override
-		public double getAverageLatency()
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public int totalConnectedNodes()
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public double getPackagesPerSecond()
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
-		
-	}
-
 }

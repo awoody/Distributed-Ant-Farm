@@ -9,8 +9,8 @@ import java.util.concurrent.Executors;
 
 import monitor.Graph;
 import monitor.Node;
+import monitor.NodeType;
 import monitor.iNodeStatus;
-import packages.AbstractPackage;
 import packages.InitializationPackage;
 import packages.ResourceUpdatePackage;
 import rpc.AnnotatedObject;
@@ -61,7 +61,7 @@ public class Distributor extends Portal implements Runnable
 			Thread threadForMe = new Thread(this);
 			threadForMe.start();
 
-			
+			monitor.setNodeType(getNodeType());
 			A.log("Distributor is running.");
 		} 
 		catch (IOException e) 
@@ -158,21 +158,13 @@ public class Distributor extends Portal implements Runnable
 	
 
 	@Override
-	public void dispatchAsynchronousPackage(AbstractPackage aPackage,
-			NodeId recipient) 
+	public NodeType getNodeType()
 	{
 		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Object dispatchSynchronousPackage(AbstractPackage aPackage,
-			NodeId recipient)
-	{
-		// TODO Auto-generated method stub
-		return null;
+		return NodeType.DISTRIBUTOR;
 	}
 	
+
 	public class DistributorRecipient extends Recipient implements iDistributor
 	{
 		@Override
@@ -214,8 +206,7 @@ public class Distributor extends Portal implements Runnable
 			
 			A.say("Distributor registered a new resource: " + resourcesByName.get(resourceName));
 		}
-		
-		
+			
 		public void reMapMethods()
 		{
 			methodMap = A.mapMethods(this);
@@ -238,6 +229,9 @@ public class Distributor extends Portal implements Runnable
 		@Override
 		public Graph getObjectGraph()
 		{
+			//Set the distributor's status by hand.
+			iNodeStatus distributorStatus = monitor.buildStatusAndReset();
+			nodeGraph.getNodeMap().get(nodeId).setNodeStatus(distributorStatus);
 			
 			//This is threaded off using a cached thread pool
 			//because it was too laggy doing this in a loop;
@@ -321,4 +315,6 @@ public class Distributor extends Portal implements Runnable
 		}
 		
 	}
+
+
 }
