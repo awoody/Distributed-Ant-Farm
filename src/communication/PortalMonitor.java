@@ -15,7 +15,11 @@ public class PortalMonitor
 	
 	public void trackLatency(long latency)
 	{
-		recentLatencies.add(latency);
+		//A.error("Adding: " + latency);
+		synchronized(recentLatencies)
+		{
+			recentLatencies.add(latency);
+		}	
 	}
 	
 	private void reset()
@@ -52,8 +56,14 @@ public class PortalMonitor
 		double totalLatencyCandidates = (double) recentLatencies.size();
 		
 		long total = 0;
-		for(int i = 0; i < recentLatencies.size(); total += recentLatencies.get(i++));
-			
+		//for(int i = 0; i < recentLatencies.size(); total += recentLatencies.get(i++));
+		synchronized(recentLatencies)
+		{
+			for(Long l : recentLatencies) total+= l;
+		}
+					
+		//A.error("Total is: " + total + " and size is: " + totalLatencyCandidates);
+				
 		double averageLatency = ((double) total) / totalLatencyCandidates;
 		
 		double totalSeconds = (System.currentTimeMillis() - trackingStartTime) / 1000;

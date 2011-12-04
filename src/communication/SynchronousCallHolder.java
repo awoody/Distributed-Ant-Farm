@@ -32,6 +32,7 @@ public class SynchronousCallHolder
 		this.p = p;
 		this.nc = c;
 		this.heldThread = heldThread;
+		this.monitor = monitor;
 	}
 	
 	
