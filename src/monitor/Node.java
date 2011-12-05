@@ -52,4 +52,10 @@ public class Node implements Serializable
 	{
 		return id;
 	}
+
+	@Override
+	public String toString( )
+	{
+		return ""+id;
+	}
 }
