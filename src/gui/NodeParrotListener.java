@@ -29,7 +29,7 @@ public class NodeParrotListener implements GraphMouseListener<Node> {
 	public NodeParrotListener( ) {
 		
 		messagePanel = new JPanel( );
-		messagePanel.setPreferredSize( new Dimension( 150, 100 ) );
+		messagePanel.setPreferredSize( new Dimension( 180, 100 ) );
 		messagePanel.setBorder( new EtchedBorder(Color.blue, Color.cyan ) );
 		messagePanel.setBackground( Color.white );
 		
@@ -56,7 +56,7 @@ public class NodeParrotListener implements GraphMouseListener<Node> {
 		//create labels
 		Label latency 	= new Label( "Average Latency: " + meanLatency );
 		Label packages 	= new Label( "Packages Per Second: " + packagesPerSec );
-		Label nodes 	= new Label( "Connected Nodes: ", nodeCount );
+		Label nodes 	= new Label( "Connected Nodes: " + nodeCount );
 		
 		//set all backgrounds to white
 		title.setBackground( Color.white );

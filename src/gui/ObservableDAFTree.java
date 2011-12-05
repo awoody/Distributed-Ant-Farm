@@ -53,11 +53,13 @@ public class ObservableDAFTree<E> extends DelegateTree<Node, E> {
 	@Override
 	public boolean removeChild( Node orphan )
 	{
+		if( orphan == null ) return false;
 		
 		//remove link from parent
-		notifyListeners( 
-				new GraphEvent.Edge<Node, E>
-				(this, Type.EDGE_REMOVED, this.getParentEdge( orphan ) ) );
+		if( getParentEdge( orphan ) != null )
+			notifyListeners( 
+					new GraphEvent.Edge<Node, E>
+					(this, Type.EDGE_REMOVED, this.getParentEdge( orphan ) ) );
 		
 		//remove node
 		notifyListeners( 

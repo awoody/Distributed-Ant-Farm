@@ -56,6 +56,6 @@ public class Node implements Serializable
 	@Override
 	public String toString( )
 	{
-		return ""+id;
+		return status.getNodeType() + "\n" + id;
 	}
 }

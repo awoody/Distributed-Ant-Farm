@@ -41,7 +41,7 @@ public class NodeId implements Serializable
 
 	public String toString()
 	{
-		return "Node: " + parentNodeId + "|" + nodeId;
+		return parentNodeId + "|" + nodeId;
 	}
 	
 	public int getParentNodeId() 

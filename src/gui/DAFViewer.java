@@ -23,7 +23,7 @@ public class DAFViewer extends VisualizationViewer<Node, String> {
 	}
 	
 	public DAFViewer( Tree<Node, String> t, Dimension d ) {
-		this( new TreeLayout<Node, String>( t, 100 ), d );
+		this( new TreeLayout<Node, String>( t, 150 ), d );
 		addRenderer( );
 	}
 	
@@ -41,7 +41,7 @@ public class DAFViewer extends VisualizationViewer<Node, String> {
 		renderContext.setVertexShapeTransformer(
 				new EllipseVertexShapeTransformer<Node>() {
 					public Shape transform( Node n ) {
-						return new Rectangle( 0, 0, 60, 30 );
+						return new Rectangle( 0, 0, 110, 30 );
 					}
 				});
 	}

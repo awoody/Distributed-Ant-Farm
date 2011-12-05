@@ -8,11 +8,10 @@ import javax.swing.JFrame;
 import monitor.Graph;
 import monitor.Node;
 
-import org.apache.commons.collections15.Transformer;
-
 import communication.NodeId;
+import communication.NodeType;
+import communication.PortalStatus;
 
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.MouseListenerTranslator;
@@ -28,6 +27,7 @@ public class GUI extends JFrame implements Runnable{
 		super( "DAF Network Graph" );
 		setDefaultCloseOperation( EXIT_ON_CLOSE );
 
+		tree = new ObservableDAFTree<String>( );
 		setTree( g );
 		
 		viewer = new DAFViewer( tree );
@@ -56,6 +56,20 @@ public class GUI extends JFrame implements Runnable{
 					n2 = new Node( new NodeId( 2, 1 ) ),
 					n3 = new Node( new NodeId( 3, 1 ) ),
 					n4 = new Node( new NodeId( 4, 2 ) );
+			
+			n1.setNodeStatus( 
+					new PortalStatus( 5.8, 18.0, 
+							1, 3 ) );
+			n2.setNodeStatus( 
+					new PortalStatus( 5.8, 18.0, 
+							2, 3 ) );
+			n3.setNodeStatus( 
+					new PortalStatus( 5.8, 18.0, 
+							2, 3 ) );
+			n4.setNodeStatus( 
+					new PortalStatus( 5.8, 18.0, 
+							0, 3 ) );
+			
 			tree.addVertex( n1 );
 			tree.addChild( "1->2", n1, n2, EdgeType.DIRECTED );
 			tree.addChild( "1->3", n1, n3, EdgeType.DIRECTED );
