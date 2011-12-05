@@ -1,7 +1,9 @@
 package client;
 
-import utilities.A;
 import monitor.Graph;
+import monitor.NodeType;
+import utilities.A;
+
 import communication.Portal;
 import communication.Recipient;
 
@@ -14,6 +16,7 @@ public class Client extends Portal
 	{
 		super(recipient, constants);
 		this.connectToDistributor();
+		monitor.setNodeType(getNodeType());
 	}
 	
 	public Graph getNetworkGraph()
@@ -33,5 +36,12 @@ public class Client extends Portal
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public NodeType getNodeType()
+	{
+		// TODO Auto-generated method stub
+		return NodeType.CLIENT;
 	}
 }

@@ -10,9 +10,11 @@ public class SynchronousCallHolder
 	private Thread heldThread;
 	public static Thread socketListenerThread;
 	private static long timeout = 10000;
+	private long holdStartTime = 0;
 	private Object returnValue;
 	private AbstractPackage p;
 	private NodeConnection nc;
+	private PortalMonitor monitor;
 	
 	public static void setSocketListenerThread(Thread t)
 	{
@@ -20,7 +22,7 @@ public class SynchronousCallHolder
 	}
 	
 	
-	public SynchronousCallHolder(Thread heldThread, AbstractPackage p, NodeConnection c)
+	public SynchronousCallHolder(Thread heldThread, AbstractPackage p, NodeConnection c, PortalMonitor monitor)
 	{	
 		if(heldThread == socketListenerThread)
 		{
@@ -30,12 +32,14 @@ public class SynchronousCallHolder
 		this.p = p;
 		this.nc = c;
 		this.heldThread = heldThread;
+		this.monitor = monitor;
 	}
 	
 	
 	public void holdThread()
 	{	
 		boolean recoveryAttempted = false;
+		holdStartTime = System.currentTimeMillis();
 		
 		//The value has already been set before the call
 		//to holdThread even occurred; don't even enter
@@ -76,6 +80,8 @@ public class SynchronousCallHolder
 	public void continueThread()
 	{
 		heldThread.interrupt(); //Should break it out of sleeping if it is.	
+		long timeHeld = System.currentTimeMillis() - holdStartTime;
+		monitor.trackLatency(timeHeld);
 	}
 
 	public Object getReturnValue()
