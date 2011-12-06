@@ -43,7 +43,6 @@ public class GUI extends JFrame implements Runnable{
 		statPanel = new StatPanel( g );
 		
 		tree = new ObservableDAFTree<String>( );
-		setTree( g );
 		if( tree.getVertexCount() == 0 )
 			tree.addVertex( new Node( new NodeId( 1, 0 ) ) );
 
@@ -52,6 +51,7 @@ public class GUI extends JFrame implements Runnable{
 				new MouseListenerTranslator<Node, String>( 
 						new NodeParrotListener( ), viewer ) );
 		viewer.setBackground( Color.white );
+		setTree( g );
 		
 		GraphZoomScrollPane panel = new GraphZoomScrollPane( viewer );
 		panel.addMouseWheelListener( getWheelListener( panel ) );
@@ -172,7 +172,7 @@ public class GUI extends JFrame implements Runnable{
 	 */
 	public static void main( String[] args ) {
 		Graph g = new Graph( );
-		NodeId id1 = new NodeId( 1, 0 );
+		/*NodeId id1 = new NodeId( 1, 0 );
 		NodeId id2 = new NodeId( 2, 1 );
 		NodeId id3 = new NodeId( 3, 1 );
 		
@@ -200,7 +200,64 @@ public class GUI extends JFrame implements Runnable{
 						1, 3 ) );
 		map.get( id3 ).setNodeStatus( 
 				new PortalStatus( 5.8, 18.0, 
+						1, 3 ) );*/
+		//test data
+		NodeId n1 = new NodeId( 1, 0 ) , 
+				n3 = new NodeId( 3, 1 ) ,
+				n2 = new NodeId( 2, 1 ) ,
+				n21 = new NodeId( 4, 2 ) ,
+				n22 = new NodeId( 5, 2 ) ,
+				n31 = new NodeId( 6, 3 ) ,
+				n32 = new NodeId( 7, 3 ) ;
+		
+		g.addNode( n1 );
+		g.addNode( n2 );
+		g.addNode( n3 );
+		g.addNode( n21 );
+		g.addNode( n22 );
+		g.addNode( n31 );
+		g.addNode( n32 );
+		
+		Map<NodeId, Node> map = g.getNodeMap();
+		
+		g.setRootNode( map.get( n1 ) );
+		
+		map.get( n1 ).addConnection( map.get( n2 ) );
+		map.get( n1 ).addConnection( map.get( n3 ) );
+		map.get( n2 ).addConnection( map.get( n21 ) );
+		map.get( n2 ).addConnection( map.get( n22 ) );
+		map.get( n3 ).addConnection( map.get( n31 ) );
+		map.get( n3 ).addConnection( map.get( n32 ) );
+		
+		map.get(n1).setNodeStatus( 
+				new PortalStatus( 5.8, 18.0, 
 						1, 3 ) );
+		map.get(n2).setNodeStatus( 
+				new PortalStatus( 5.8, 18.0, 
+						2, 3 ) );
+		map.get(n3).setNodeStatus( 
+				new PortalStatus( 5.8, 18.0, 
+						2, 3 ) );
+		map.get(n21).setNodeStatus( 
+				new PortalStatus( 5.8, 18.0, 
+						0, 3 ) );
+		map.get(n22).setNodeStatus( 
+				new PortalStatus( 5.8, 18.0, 
+						0, 3 ) );
+		map.get(n31).setNodeStatus( 
+				new PortalStatus( 5.8, 18.0, 
+						0, 3 ) );
+		map.get(n32).setNodeStatus( 
+				new PortalStatus( 5.8, 18.0, 
+						0, 3 ) );
+		
+		g.addEdge(n1, n2);
+		g.addEdge(n1, n3);
+		g.addEdge(n2, n21);
+		g.addEdge(n2, n22);
+		g.addEdge(n3, n31);
+		g.addEdge(n3, n32);
+		
 		
 		GUI ui = new GUI( g, null );
 		ui.setVisible( true );
