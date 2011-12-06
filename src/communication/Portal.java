@@ -126,12 +126,12 @@ public abstract class Portal implements iPortal
 		} 
 		catch (UnknownHostException e) 
 		{
-			A.error("Unable to connect to distributor");
+			A.error("Unable to connect to distributor.  Please verify that your constants file is configured properly with a distributor address.");
 			e.printStackTrace();
 		} 
 		catch (IOException e)
 		{
-			A.error("Unable to connect to distributor");
+			A.error("Unable to connect to distributor.  Please verify that your constants file is configured properly with a distributor address.");
 			e.printStackTrace();
 		}		
 	}
