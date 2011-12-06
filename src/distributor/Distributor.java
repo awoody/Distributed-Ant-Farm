@@ -1,4 +1,6 @@
 package distributor;
+import gui.GUI;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,6 +20,7 @@ import utilities.A;
 
 import communication.NodeId;
 import communication.Portal;
+import communication.PortalStatus;
 import communication.Recipient;
 
 import constants.iConstants;
@@ -51,6 +54,11 @@ public class Distributor extends Portal implements Runnable
 			isRunning = true;
 			nodeGraph.setDistributor(new Node(nodeId));
 			nodeGraph.addNode(nodeId);
+			//TODO HARDCODED
+			nodeGraph.getNodeMap( ).get(nodeId).setNodeStatus(
+					new PortalStatus( 2.1, 30.2, 1, 100 ) );
+			//TODO addition
+			nodeGraph.setRootNode( nodeGraph.getNodeMap().get(nodeId));
 	
 			//Kind of a hack but this is the only case where the recipient
 			//is the object itself and not a user-provided object.
@@ -67,7 +75,18 @@ public class Distributor extends Portal implements Runnable
 		catch (IOException e) 
 		{
 			e.printStackTrace();
-		}	
+		}
+		
+		//TODO remove later
+		try {
+			Thread.sleep( 8000 );
+//			GUI g = new GUI( getNetworkGraph( ), this );
+			GUI g = new GUI( null, this );
+			g.setVisible( true );
+			new Thread( g ).run( );
+		} catch( InterruptedException e ) {
+			//ignore
+		}
 	}
 	
 	
@@ -89,7 +108,7 @@ public class Distributor extends Portal implements Runnable
 	
 	public Graph getNetworkGraph()
 	{
-		return null;
+		return nodeGraph;
 	}
 	
 	
@@ -109,7 +128,7 @@ public class Distributor extends Portal implements Runnable
 				NodeConnection newConnection = new NodeConnection(clientSocket);
 				Thread newClientThread = new Thread(newConnection);
 				newClientThread.start();
-				InitializationPackage ip = new InitializationPackage(nodeId, this.generateMessageId(), this.generateNewNodeId()); 
+				InitializationPackage ip = new InitializationPackage(nodeId, this.generateMessageId(), this.generateNewNodeId());
 				
 				this.allConnections.put(ip.getIdForNewNode(), newConnection);
 				newConnection.sendAsynchronousPackage(ip);
@@ -118,7 +137,9 @@ public class Distributor extends Portal implements Runnable
 				//and the new node.
 				nodeGraph.addNode(ip.idForNewNode);
 				nodeGraph.addEdge(nodeId, ip.getIdForNewNode());
-				nodeGraph.addEdge(ip.getIdForNewNode(), nodeId);
+				nodeGraph.getNodeMap().get(ip.idForNewNode).setNodeStatus(
+						new PortalStatus(10.0, 20.3, 0, 1 ) );
+				//nodeGraph.addEdge(ip.getIdForNewNode(), nodeId);
 				
 				A.log("Distributor accepted a new connection and assigned nodeId: " + ip.idForNewNode);
 			}

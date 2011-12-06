@@ -16,6 +16,7 @@ import monitor.Node;
 import communication.NodeId;
 import communication.PortalStatus;
 
+import distributor.Distributor;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -23,22 +24,28 @@ import edu.uci.ics.jung.visualization.control.MouseListenerTranslator;
 
 public class GUI extends JFrame implements Runnable{
 
-	private static final int pause = 1000;
+	private static final int pause = 10000;
 	private static final long serialVersionUID = 774383016016239497L;
 	private ObservableDAFTree<String> tree;
 	private final VisualizationViewer<Node, String> viewer;
 	private final StatPanel statPanel;
+	private final Distributor distributor;
 	
-	public GUI( Graph g ) {
+	public GUI( Graph g, Distributor d ) {
 		super( "DAF Network Graph" );
+		
+		distributor = d;
 
 		
-		setDefaultCloseOperation( EXIT_ON_CLOSE );
+		//setDefaultCloseOperation( EXIT_ON_CLOSE );
+		setDefaultCloseOperation( HIDE_ON_CLOSE );
 
 		statPanel = new StatPanel( g );
 		
 		tree = new ObservableDAFTree<String>( );
 		setTree( g );
+		if( tree.getVertexCount() == 0 )
+			tree.addVertex( new Node( new NodeId( 1, 0 ) ) );
 
 		viewer = new DAFViewer( tree );
 		viewer.addMouseListener( 
@@ -61,9 +68,16 @@ public class GUI extends JFrame implements Runnable{
 		setLocationRelativeTo( null );
 	}
 	
-	public void setTree( Graph g ) {
-		tree.clear( );
-		if( g == null ) {
+	public synchronized void setTree( Graph g ) {
+		System.out.println( "Changing Graph..." );
+		//TODO
+		if( g == null ) return;
+		
+		//TODO bring back?
+		//tree.clear( );
+		tree = new ObservableDAFTree<String>( );
+		
+		/*if( g == null ) {
 			//test data
 			Node n1 = new Node( new NodeId( 1, 0 ) ), 
 					n2 = new Node( new NodeId( 2, 1 ) ),
@@ -103,16 +117,16 @@ public class GUI extends JFrame implements Runnable{
 			tree.addChild( "2->5", n2, n22 );
 			tree.addChild( "3->6", n3, n31 );
 			return;
-		}
+		}*/
 		
 		if( g.getRootNode( ) == null ) return;
 		
 		Node activeNode;
-		/*ArrayList<Node> toAdd = new ArrayList<Node> ( 
-				g.getRootNode()
-				.getEdges( ) );*/
+		
 		ArrayList<Node> toAdd = new ArrayList<Node>( );
 		toAdd.add( g.getRootNode( ) );
+		
+		//TODO bring back?
 		tree.addVertex( g.getRootNode( ) );
 		
 		//for each node...
@@ -134,6 +148,7 @@ public class GUI extends JFrame implements Runnable{
 				}
 		}
 		
+		viewer.getGraphLayout().setGraph( tree );
 		statPanel.setGraph( g );
 		
 		//viewer.repaint( );
@@ -187,7 +202,7 @@ public class GUI extends JFrame implements Runnable{
 				new PortalStatus( 5.8, 18.0, 
 						1, 3 ) );
 		
-		GUI ui = new GUI( g );
+		GUI ui = new GUI( g, null );
 		ui.setVisible( true );
 		//gui.mainLoop( );
 		
@@ -199,10 +214,15 @@ public class GUI extends JFrame implements Runnable{
 	{
 		while( true ) {
 			try {
-				
+				setTree( distributor.getNetworkGraph( ) );
+				viewer.repaint( );
 				Thread.sleep( pause );
 			} catch( InterruptedException e ) {
 				System.exit( 1 );
+			} catch( Exception e ) {
+				System.out.println( "DIED IN SETTREE" );
+				e.printStackTrace( );
+				System.exit( 100 );
 			}
 		}
 	}

@@ -40,35 +40,34 @@ public class StatPanel extends JPanel {
 	}
 	
 	public void setGraph( Graph g ) {
+		System.out.println( "Updating global stats..." );
+		
 		if( g == null ) return;
 		if( g.getRootNode( ) == null ) return;
 		
-		Node activeNode;
+		//Node activeNode;
 		ArrayList<Node> toAdd = new ArrayList<Node>( );
 		toAdd.add( g.getRootNode( ) );
 		iNodeStatus stats = g.getRootNode( ).getNodeStatus();
+		
+		//TODO fix?
+		if( stats == null ) return;
+		
 		double latencySum = stats.getAverageLatency( );
 		double packagesSum = stats.getPackagesPerSecond( );
 		int connectionsSum = stats.totalConnectedNodes( );
 		int nodeCount = 1;
 		
-		//for each node...
-		while( !toAdd.isEmpty( ) ) {
-				activeNode = toAdd.remove( 0 );
-				//for each out edge from this node...
-				for( Node edge: activeNode.getEdges( ) ) {
-					
-					//take care of child's children later
-					toAdd.add( edge );
-					
-					nodeCount++;
-					stats = edge.getNodeStatus( );
-					latencySum += stats.getAverageLatency( );
-					packagesSum += stats.getPackagesPerSecond( );
-					connectionsSum += stats.totalConnectedNodes( );
-					
-				}
-		}
+			//for each out edge from this node...
+			for( Node edge: g.getAllNodes( ) ) {
+				
+				nodeCount++;
+				stats = edge.getNodeStatus( );
+				latencySum += stats.getAverageLatency( );
+				packagesSum += stats.getPackagesPerSecond( );
+				connectionsSum += stats.totalConnectedNodes( );
+				
+			}
 		
 		latency.setText( "Average latency per Node: " + 
 					latencySum / nodeCount );
@@ -76,6 +75,8 @@ public class StatPanel extends JPanel {
 					packagesSum / nodeCount );
 		connections.setText( "Average connections per Node: " + 
 					connectionsSum / nodeCount );
+		
+		repaint( );
 	}
 
 }

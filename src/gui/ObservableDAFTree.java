@@ -50,7 +50,7 @@ public class ObservableDAFTree<E> extends DelegateTree<Node, E> {
 		return addChild( edge, parent, child, EdgeType.DIRECTED );
 	}
 
-	@Override
+	/*@Override
 	public boolean removeChild( Node orphan )
 	{
 		if( orphan == null ) return false;
@@ -74,14 +74,14 @@ public class ObservableDAFTree<E> extends DelegateTree<Node, E> {
 	public boolean removeVertex( Node n )
 	{
 		return removeChild( n );
-	}
+	}*/
 	
 	public void addGraphEventListener( GraphEventListener<Node, E> l ) {
 		listeners.add( l );
 	}
 	
 	public void clear( ) {
-		removeVertex( getRoot( ) );
+		removeChild( getRoot( ) );
 	}
 	
 }
