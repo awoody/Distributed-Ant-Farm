@@ -48,8 +48,7 @@ public abstract class Recipient
 	}
 	
 	public abstract void newObjectHasConnected(AnnotatedObject newObject);
-	public abstract String getResourceName();
-	
+
 	//This intentionally has no modifier; making it visible to class
 	//and package, but not subclass and world; users cannot see this
 	//method when implementing.
